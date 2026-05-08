@@ -1,0 +1,25 @@
+# Build output
+build/
+dist/
+
+# PyInstaller
+*.spec.bak
+
+# Database (user-local, not shared via git)
+reports.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Patch scripts (dev utilities, not needed in repo)
+_patch_*.py
+_fix*.py

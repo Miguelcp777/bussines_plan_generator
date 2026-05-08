@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 _patch.py)",
+      "Bash(python _patch.py)",
+      "Bash(python -c ' *)",
+      "Bash(node --check _check.js)",
+      "Bash(del _patch.py _fix.py _check.js)",
+      "PowerShell(pyinstaller --version 2>&1)",
+      "PowerShell(python -m PyInstaller --version 2>&1)",
+      "PowerShell(Get-Item \"C:\\\\Users\\\\migue\\\\Documents\\\\Proyectos antigravity\\\\Bussines_plan_tool\\\\dist\\\\JJV_BusinessPlanTool.exe\" | Select-Object Name, @{N='Size \\(MB\\)';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)",
+      "Bash(python _patch_compare.py)",
+      "Bash(del _check.js _patch_compare.py)",
+      "Bash(node --check _chk.js)",
+      "Bash(del _chk.js)",
+      "Bash(python _patch_insight.py)",
+      "Bash(python _patch_undo.py)",
+      "Bash(python _patch_theme.py)"
+    ]
+  }
+}
