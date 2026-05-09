@@ -429,6 +429,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .cmp-tbl td{padding:5px 10px;text-align:right;border-bottom:1px solid rgba(48,54,61,.4);font-variant-numeric:tabular-nums;white-space:nowrap}
 .cmp-tbl td:first-child{text-align:left;color:var(--mut);font-size:0.78rem;padding-left:2px}
 .cmp-tbl tr:last-child td{border-bottom:none;font-weight:700;color:var(--txt)}
+.cmp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:960px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-stitle{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--bdr)}
 .cmp-pos{color:#3fb950!important;font-weight:700}
 .cmp-neg{color:#f85149!important;font-weight:700}
 .cmp-neu{color:var(--dim)!important}
@@ -560,7 +563,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <span class="cmp-title">⇄ Comparing: <strong id="cmpCurrName">Current</strong> &nbsp;vs&nbsp; <strong id="cmpOtherName">—</strong></span>
       <button class="cmp-cls" onclick="clearComparison()">✕ Clear comparison</button>
     </div>
-    <div id="cmpTable"></div>
+    <div class="cmp-grid">
+      <div class="cmp-section"><div class="cmp-stitle">Revenue</div><div id="cmpTable"></div></div>
+      <div class="cmp-section"><div class="cmp-stitle">Install Base (contracts / platform)</div><div id="cmpTableIB"></div></div>
+      <div class="cmp-section"><div class="cmp-stitle">Avg Contract Value / Platform</div><div id="cmpTableAvg"></div></div>
+    </div>
   </div>
 
   <!-- MAIN LAYOUT -->
@@ -2239,16 +2246,21 @@ function computeSummaryFrom(st){
     });
   }catch(e){ return {base:0,retRev:0,chnRev:0,diffRev:0,riskW:0,oppUp:0,net:0}; }
   var base=0,retRev=0,chnRev=0,diffRev=0;
+  var platforms={};
   rows.forEach(function(r){
     var rev=cRevMap[r._id]!==undefined?cRevMap[r._id]:r._rev;
     var hx=r._days!==null&&r._days<-356;
     if(hx){diffRev+=rev;return;}
     base+=rev;
-    if(churn.has(r._id))chnRev+=rev; else retRev+=rev;
+    var plt=r.Platform||'Unknown';
+    if(!platforms[plt]) platforms[plt]={count:0,retCount:0,retRev:0};
+    platforms[plt].count++;
+    if(churn.has(r._id)){chnRev+=rev;}
+    else{retRev+=rev;platforms[plt].retCount++;platforms[plt].retRev+=rev;}
   });
   var riskW=(st.risks||[]).reduce(function(s,r){return s+(r.prob/100)*r.impact;},0);
   var oppUp=(st.opps||[]).reduce(function(s,o){return s+o.revenue;},0);
-  return{base:base,retRev:retRev,chnRev:chnRev,diffRev:diffRev,riskW:riskW,oppUp:oppUp,net:retRev-riskW+oppUp};
+  return{base:base,retRev:retRev,chnRev:chnRev,diffRev:diffRev,riskW:riskW,oppUp:oppUp,net:retRev-riskW+oppUp,platforms:platforms};
 }
 
 function selectForCompare(id, btn){
@@ -2270,6 +2282,42 @@ function _fmtM(v){
   return '$'+Math.round(v);
 }
 
+function _curPlatformData(){
+  var platforms={};
+  getFiltered().forEach(function(r){
+    var hx=r._days!==null&&r._days<-356;
+    if(hx) return;
+    var rev=getRev(r);
+    var plt=r.Platform||'Unknown';
+    if(!platforms[plt]) platforms[plt]={count:0,retCount:0,retRev:0};
+    platforms[plt].count++;
+    if(!S.churn.has(r._id)){platforms[plt].retCount++;platforms[plt].retRev+=rev;}
+  });
+  return platforms;
+}
+
+function _buildCmpTable(metrics, curHeader, otherHeader, fmtFn){
+  var rows=metrics.map(function(m){
+    var delta=m.cur-m.oth;
+    var pct=m.oth!==0?(delta/Math.abs(m.oth)*100):null;
+    var positive=(m.good!==false)?(delta>0):(delta<0);
+    var cls=delta===0?'cmp-neu':positive?'cmp-pos':'cmp-neg';
+    var arrow=delta===0?'':delta>0?'&#8593;':'&#8595;';
+    var sign=delta>0?'+':'';
+    return '<tr>'
+      +'<td>'+_escH(String(m.lbl))+'</td>'
+      +'<td>'+fmtFn(m.cur)+'</td>'
+      +'<td>'+fmtFn(m.oth)+'</td>'
+      +'<td class="'+cls+'">'+(delta===0?'&#8211;':sign+fmtFn(Math.abs(delta))+' '+arrow)+'</td>'
+      +'<td class="'+cls+'">'+(pct!==null&&delta!==0?sign+pct.toFixed(1)+'%':'&#8211;')+'</td>'
+      +'</tr>';
+  });
+  return '<table class="cmp-tbl">'
+    +'<thead><tr><th style="text-align:left">Metric</th><th>'+curHeader+'</th><th>'+otherHeader+'</th><th>&#916;</th><th>&#916;%</th></tr></thead>'
+    +'<tbody>'+rows.join('')+'</tbody>'
+    +'</table>';
+}
+
 function renderComparison(other, otherName){
   var filtered=getFiltered();
   var cur=calcSummary(filtered);
@@ -2277,49 +2325,41 @@ function renderComparison(other, otherName){
   $('cmpCurrName').textContent=code;
   $('cmpOtherName').textContent=otherName;
 
-  // good:true  → higher current is better (green when delta>0)
-  // good:false → lower  current is better (green when delta<0)
-  var metrics=[
+  var ch=_escH(code.length>18?code.slice(0,16)+'…':code);
+  var oh=_escH(otherName.length>18?otherName.slice(0,16)+'…':otherName);
+
+  // ── Table 1: Revenue ──────────────────────────────────────────────────────
+  var revMetrics=[
     {lbl:'Base Revenue',     cur:cur.base,    oth:other.base,    good:true },
     {lbl:'Retained Revenue', cur:cur.retRev,  oth:other.retRev,  good:true },
     {lbl:'Churn Loss',       cur:cur.chnRev,  oth:other.chnRev,  good:false},
-    {lbl:'⚠ Difficult',     cur:cur.diffRev, oth:other.diffRev, good:false},
+    {lbl:'Difficult',        cur:cur.diffRev, oth:other.diffRev, good:false},
     {lbl:'Risk Exposure',    cur:cur.riskW,   oth:other.riskW,   good:false},
     {lbl:'Opp. Upside',      cur:cur.oppUp,   oth:other.oppUp,   good:true },
     {lbl:'Net Projection',   cur:cur.net,     oth:other.net,     good:true },
   ];
+  $('cmpTable').innerHTML=_buildCmpTable(revMetrics, ch, oh, _fmtM);
 
-  var tRows=metrics.map(function(m){
-    var delta=m.cur-m.oth;
-    var pct=m.oth!==0?(delta/Math.abs(m.oth)*100):null;
-    var positive=m.good?(delta>0):(delta<0);
-    var negative=m.good?(delta<0):(delta>0);
-    var cls=delta===0?'cmp-neu':positive?'cmp-pos':'cmp-neg';
-    var arrow=delta===0?'':delta>0?'↑':'↓';
-    var sign=delta>=0?'+':'';
-    return '<tr>'
-      +'<td>'+m.lbl+'</td>'
-      +'<td>'+_fmtM(m.cur)+'</td>'
-      +'<td>'+_fmtM(m.oth)+'</td>'
-      +'<td class="'+cls+'">'+sign+_fmtM(delta)+' '+arrow+'</td>'
-      +'<td class="'+cls+'">'+(pct!==null?sign+pct.toFixed(1)+'%':'–')+'</td>'
-      +'</tr>';
+  // ── Tables 2 & 3: Per-platform ────────────────────────────────────────────
+  var curPlat=_curPlatformData();
+  var othPlat=other.platforms||{};
+  var allPlt=Object.keys(Object.assign({},curPlat,othPlat)).sort();
+
+  var ibMetrics=allPlt.map(function(p){
+    return{lbl:p, cur:(curPlat[p]||{}).count||0, oth:(othPlat[p]||{}).count||0, good:true};
   });
+  $('cmpTableIB').innerHTML=_buildCmpTable(ibMetrics, ch, oh, function(v){return v;});
 
-  var otherHeader=_escH(otherName.length>28?otherName.slice(0,26)+'…':otherName);
-  $('cmpTable').innerHTML='<table class="cmp-tbl">'
-    +'<thead><tr>'
-    +'<th style="text-align:left">Metric</th>'
-    +'<th>Current ('+_escH(code)+')</th>'
-    +'<th>'+otherHeader+'</th>'
-    +'<th>Δ Absolute</th>'
-    +'<th>Δ %</th>'
-    +'</tr></thead>'
-    +'<tbody>'+tRows.join('')+'</tbody>'
-    +'</table>';
+  var avgMetrics=allPlt.map(function(p){
+    var cp=curPlat[p]||{retCount:0,retRev:0};
+    var op=othPlat[p]||{retCount:0,retRev:0};
+    var c=cp.retCount?cp.retRev/cp.retCount:0;
+    var o=op.retCount?op.retRev/op.retCount:0;
+    return{lbl:p, cur:c, oth:o, good:true};
+  });
+  $('cmpTableAvg').innerHTML=_buildCmpTable(avgMetrics, ch, oh, _fmtM);
 
   $('cmpBar').classList.add('on');
-  // Scroll to top so bar is visible
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
