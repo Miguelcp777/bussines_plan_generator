@@ -3102,6 +3102,23 @@ function computeSummaryFrom(st){
       return Object.assign({},r,{_id:i,_rev:rev,_days:isNaN(days)?null:days});
     });
   }catch(e){ return {base:0,retRev:0,chnRev:0,diffRev:0,riskW:0,oppUp:0,net:0}; }
+  // Apply saved filters so comparison reflects the same scope as the saved session
+  var filt=st.filters||{};
+  var fClusters=new Set(filt.clusters||[]);
+  var fCountries=new Set(filt.countries||[]);
+  var fPlatforms=new Set(filt.platforms||[]);
+  var fRevTypes=new Set(filt.revTypes||[]);
+  var fSearch=(filt.search||'').toLowerCase();
+  if(fClusters.size||fCountries.size||fPlatforms.size||fRevTypes.size||fSearch){
+    rows=rows.filter(function(r){
+      if(fClusters.size&&!fClusters.has(r.Cluster))return false;
+      if(fCountries.size&&!fCountries.has(r.Country))return false;
+      if(fPlatforms.size&&!fPlatforms.has(r.Platform))return false;
+      if(fRevTypes.size&&!fRevTypes.has(r.Direct_vs_bundle_revenue))return false;
+      if(fSearch&&!((r.account_name||'').toLowerCase().includes(fSearch)||(r.Serial_number||'').toLowerCase().includes(fSearch)||(r.Country||'').toLowerCase().includes(fSearch)))return false;
+      return true;
+    });
+  }
   var base=0,retRev=0,chnRev=0,diffRev=0;
   var platforms={};
   rows.forEach(function(r){
@@ -3146,8 +3163,8 @@ function _fmtM(v){
 
 function _curPlatformData(){
   var platforms={};
-  // Use S.raw for absolute install base (all equipment, not just filtered)
-  S.raw.forEach(function(r){
+  // Use getFiltered() so the comparison respects active scope filters
+  getFiltered().forEach(function(r){
     var plt=r.Platform||'Unknown';
     if(!platforms[plt]) platforms[plt]={total:0,active:0,tm:0,retCount:0,retRev:0};
     platforms[plt].total++;
