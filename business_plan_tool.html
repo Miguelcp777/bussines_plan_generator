@@ -3284,52 +3284,103 @@ function _buildIBTable(curPlat, othPlat, allPlt, target, ch, oh){
 }
 
 function renderComparison(other, otherName){
-  var filtered=getFiltered();
-  var cur=calcSummary(filtered);
-  var code=$('rnPrev').textContent;
-  $('cmpCurrName').textContent=code;
-  $('cmpOtherName').textContent=otherName;
+  // Wrap in multi-compare format for unified rendering
+  var cd=calcSummary(getFiltered());
+  cd.platforms=_curPlatformData();
+  renderMultiComparison([
+    {name:$('rnPrev').textContent,data:cd},
+    {name:otherName,data:other}
+  ]);
+}
 
-  var ch=_escH(code.length>18?code.slice(0,16)+'…':code);
-  var oh=_escH(otherName.length>18?otherName.slice(0,16)+'…':otherName);
+function _shortName(n){return _escH(n.length>16?n.slice(0,15)+'...':n);}
 
-  // ── Table 1: Revenue ──────────────────────────────────────────────────────
-  var revMetrics=[
-    {lbl:'Base Revenue',     icon:'&#9679;', cur:cur.base,    oth:other.base,    good:true },
-    {lbl:'Retained Revenue', icon:'&#10003;', cur:cur.retRev,  oth:other.retRev,  good:true },
-    {lbl:'Churn Loss',       icon:'&#9888;',  cur:cur.chnRev,  oth:other.chnRev,  good:false},
-    {lbl:'Difficult',        icon:'&#9744;',  cur:cur.diffRev, oth:other.diffRev, good:false},
-    {lbl:'Risk Exposure',    icon:'&#9651;',  cur:cur.riskW,   oth:other.riskW,   good:false},
-    {lbl:'Opp. Upside',      icon:'&#9650;',  cur:cur.oppUp,   oth:other.oppUp,   good:true },
-    {lbl:'Net Projection',   icon:'&#9654;',  cur:cur.net,     oth:other.net,     good:true },
-  ];
-  $('cmpTable').innerHTML=_buildCmpTable(revMetrics, ch, oh, _fmtM);
+function _buildMultiRevTable(reports){
+  var keys=['base','retRev','chnRev','diffRev','riskW','oppUp','net'];
+  var lbls=['Base Revenue','Retained Revenue','Churn Loss','Difficult to Renew','Risk Exposure','Opp. Upside','Net Projection'];
+  var icons=['&#9679;','&#10003;','&#9888;','&#9744;','&#9651;','&#9650;','&#9654;'];
+  var hiBetter=[true,true,false,false,false,true,true];
+  var colW=Math.max(80,Math.min(130,Math.floor(400/reports.length)));
+  var hdr='<div style="overflow-x:auto"><table class="cmp-tbl" style="width:100%;min-width:'+(120+reports.length*colW)+'px">'
+    +'<thead><tr style="background:var(--sur2)">'
+    +'<th style="text-align:left;padding:7px 12px;min-width:120px">Metric</th>'
+    +reports.map(function(r){return'<th style="text-align:right;padding:7px 8px;min-width:'+colW+'px">'+_shortName(r.name)+'</th>';}).join('')
+    +'</tr></thead><tbody>';
+  var rows=keys.map(function(key,i){
+    var vals=reports.map(function(r){return(r.data[key])||0;});
+    var mx=Math.max.apply(null,vals),mn=Math.min.apply(null,vals),allSame=mx===mn,good=hiBetter[i];
+    var cells=vals.map(function(v){
+      var best=!allSame&&(good?v===mx:v===mn),worst=!allSame&&(good?v===mn:v===mx);
+      var clr=allSame?'':best?'#3fb950':worst?'#f85149':'var(--txt)';
+      return'<td style="text-align:right;padding:6px 8px;color:'+clr+';font-weight:'+(best&&!allSame?700:400)+'">'+_fmtM(v)+'</td>';
+    }).join('');
+    return'<tr><td style="padding:6px 12px;font-size:0.79rem;white-space:nowrap"><span style="margin-right:5px;opacity:.7">'+icons[i]+'</span>'+lbls[i]+'</td>'+cells+'</tr>';
+  }).join('');
+  return hdr+rows+'</tbody></table></div>';
+}
 
-  // ── Tables 2 & 3: Per-platform ────────────────────────────────────────────
-  var curPlat=_curPlatformData();
-  var othPlat=other.platforms||{};
-  var allPlt=Object.keys(Object.assign({},curPlat,othPlat)).sort();
-  var target=S.cRateTarget||80;
-
-  $('cmpTableIB').innerHTML=_buildIBTable(curPlat,othPlat,allPlt,target,ch,oh);
-
-  var avgMetrics=allPlt.map(function(p){
-    var cp=curPlat[p]||{retCount:0,retRev:0};
-    var op=othPlat[p]||{retCount:0,retRev:0};
-    var cv=cp.retCount?cp.retRev/cp.retCount:0;
-    var ov=op.retCount?op.retRev/op.retCount:0;
-    return{lbl:p, cur:cv, oth:ov, good:true};
+function _buildMultiIBTable(reports,target){
+  var allPlt={};
+  reports.forEach(function(r){Object.keys(r.data.platforms||{}).forEach(function(p){allPlt[p]=1;});});
+  var plts=Object.keys(allPlt).sort();
+  var colW=Math.max(70,Math.min(110,Math.floor(360/reports.length)));
+  var html='<div style="overflow-x:auto"><table class="cmp-tbl" style="width:100%;min-width:'+(110+reports.length*colW)+'px">'
+    +'<thead><tr style="background:var(--sur2)">'
+    +'<th style="text-align:left;padding:7px 12px;min-width:110px">Platform</th>'
+    +reports.map(function(r){return'<th style="text-align:right;padding:7px 8px;min-width:'+colW+'px">'+_shortName(r.name)+'</th>';}).join('')
+    +'</tr></thead><tbody>';
+  plts.forEach(function(p){
+    var rates=reports.map(function(r){var pd=(r.data.platforms||{})[p]||{active:0,total:0};return pd.total?pd.active/pd.total*100:0;});
+    var mx=Math.max.apply(null,rates),mn=Math.min.apply(null,rates),allSame=mx===mn;
+    var cells=reports.map(function(r,ri){
+      var pd=(r.data.platforms||{})[p]||{active:0,total:0};
+      var rate=rates[ri],best=!allSame&&rate===mx,worst=!allSame&&rate===mn;
+      var clr=allSame?'':best?'#3fb950':worst?'#f85149':'var(--txt)';
+      return'<td style="text-align:right;padding:5px 8px">'
+        +'<div style="color:'+clr+';font-weight:'+(best&&!allSame?700:400)+'">'+rate.toFixed(1)+'%</div>'
+        +'<div style="font-size:.7rem;color:var(--mut)">'+pd.active+'/'+pd.total+'</div>'
+        +'</td>';
+    }).join('');
+    html+='<tr><td style="padding:6px 12px;font-size:0.79rem;font-weight:500">'+_escH(p)+'</td>'+cells+'</tr>';
   });
-  $('cmpTableAvg').innerHTML=_buildCmpTable(avgMetrics, ch, oh, _fmtM);
+  html+='</tbody></table></div>';
+  return html;
+}
 
+function _buildMultiAvgTable(reports){
+  var allPlt={};
+  reports.forEach(function(r){Object.keys(r.data.platforms||{}).forEach(function(p){allPlt[p]=1;});});
+  var plts=Object.keys(allPlt).sort();
+  var colW=Math.max(80,Math.min(120,Math.floor(380/reports.length)));
+  var html='<div style="overflow-x:auto"><table class="cmp-tbl" style="width:100%;min-width:'+(110+reports.length*colW)+'px">'
+    +'<thead><tr style="background:var(--sur2)">'
+    +'<th style="text-align:left;padding:7px 12px;min-width:110px">Platform</th>'
+    +reports.map(function(r){return'<th style="text-align:right;padding:7px 8px;min-width:'+colW+'px">'+_shortName(r.name)+'</th>';}).join('')
+    +'</tr></thead><tbody>';
+  plts.forEach(function(p){
+    var avgs=reports.map(function(r){var pd=(r.data.platforms||{})[p]||{retCount:0,retRev:0};return pd.retCount?pd.retRev/pd.retCount:0;});
+    var mx=Math.max.apply(null,avgs),mn=Math.min.apply(null,avgs),allSame=mx===mn;
+    var cells=avgs.map(function(avg){
+      var best=!allSame&&avg===mx,worst=!allSame&&avg===mn;
+      var clr=allSame?'':best?'#3fb950':worst?'#f85149':'var(--txt)';
+      return'<td style="text-align:right;padding:6px 8px;color:'+clr+';font-weight:'+(best&&!allSame?700:400)+'">'+_fmtM(avg)+'</td>';
+    }).join('');
+    html+='<tr><td style="padding:6px 12px;font-size:0.79rem;font-weight:500">'+_escH(p)+'</td>'+cells+'</tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+function renderMultiComparison(reports){
+  var target=parseInt($('cmpRateTarget').value)||S.cRateTarget||80;
+  var titleEl=$('cmpTitleSpan');
+  if(titleEl) titleEl.innerHTML='&#8644; Comparing: '+reports.map(function(r){return'<strong>'+_shortName(r.name)+'</strong>';}).join(' &nbsp;&middot;&nbsp; ');
+  $('cmpTable').innerHTML=_buildMultiRevTable(reports);
+  $('cmpTableIB').innerHTML=_buildMultiIBTable(reports,target);
+  $('cmpTableAvg').innerHTML=_buildMultiAvgTable(reports);
   $('cmpBar').classList.add('on');
   window.scrollTo({top:0,behavior:'smooth'});
 }
-
-
-// ===== UNDO / REDO =====
-const MAX_UNDO = 40;
-
 function _snap(){
   return{
     churn:[...S.churn],
