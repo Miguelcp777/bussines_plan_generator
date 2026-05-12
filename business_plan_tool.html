@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABPklEQVR4nO2XO27CQBRFzyAUOnp7CiQ6N7hDgl0gsTu2wD4oqEBiCR7aKGWaSREGXgyT+PNsFInb2JI/5753LxI2CKXpzNODiuKAMcYADJ4BB/De+6uBHuFn4AzwvtkAMOwSXhQHrM0DmAs4CedpOvODx4/qwOXR2jyR8KBhR/AwcWJtDnAHDlLfwI91r1ecFlNOi2n0frUNSPAFHp1a3UDIGb6z/m1idQMCHvKupVYdkL/rJvBWBmTmbjlnPxmxn4xqv6d2BOWyueW8UtlUDJTL1mTixgbali2mSh3QKFtjAzJzbTj8EYGE77Is2Y5v19YfbyoGohsow1VoVQ2U294VHB5E0FXbY7rbQID2AYfSBrbjTwB2WUYonFbZYursL9nLwMvA/zHg3NE8C+7c0VzhfX0fSjiICPrchGR9AZi1hd8jjIb4AAAAAElFTkSuQmCC">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JJV · Business Plan Tool</title>
+<title>JJV · Business Plan Tool V2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:14px}
@@ -525,6 +526,82 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 .btn-theme{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:6px 10px;font-size:0.88rem;cursor:pointer;transition:all .15s;line-height:1}
 .btn-theme:hover{border-color:var(--cyn)}
+
+/* === V2 ENHANCEMENTS === */
+/* === FEATURE ADDITIONS === */
+/* Downgrade / Upgrade badges */
+.badge-dg{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.67rem;font-weight:700;background:rgba(210,153,34,.15);color:#d29922;border:1px solid rgba(210,153,34,.3)}
+.badge-ug{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.67rem;font-weight:700;background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.dg-row{display:none;margin-top:4px;padding:8px 12px;background:rgba(210,153,34,.07);border:1px solid rgba(210,153,34,.2);border-radius:var(--rs)}
+.ug-row{display:none;margin-top:4px;padding:8px 12px;background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);border-radius:var(--rs)}
+
+.freshness-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--mut);background:var(--sur2);border:1px solid var(--bdr);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.freshness-badge .fb-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);flex-shrink:0}
+.freshness-badge .fb-dot.stale{background:var(--org)}
+.ps-sel{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:3px 6px;font-size:0.73rem;outline:none;cursor:pointer}
+.ps-sel:focus{border-color:var(--pur)}
+.btn-xl{background:rgba(63,185,80,.12);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.btn-xl:hover{background:rgba(63,185,80,.22)}
+
+.tbtn[data-tab="actions"]:hover,.tbtn[data-tab="actions"].act{color:#22d3ee;border-bottom-color:#22d3ee}
+.tbtn[data-tab="actions"].act{background:rgba(34,211,238,.1)}
+.tbtn[data-tab="actions"] .tbdg{background:rgba(34,211,238,.15);color:#22d3ee}
+#tabActions.act{overflow-y:auto;padding:16px 22px;gap:16px;display:flex!important;flex-direction:column}
+.hs-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:0.68rem;font-weight:700;min-width:32px;text-align:center}
+.hs-hi{background:rgba(63,185,80,.15);color:#3fb950}.hs-md{background:rgba(210,153,34,.15);color:#d29922}.hs-lo{background:rgba(248,81,73,.15);color:#f85149}
+.rev-target-wrap{display:flex;align-items:center;gap:5px;font-size:0.77rem;color:var(--mut);white-space:nowrap}
+.rev-target-inp{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:4px 7px;font-size:0.77rem;width:84px;outline:none}
+.rev-target-inp:focus{border-color:var(--pur)}
+.kgap{font-size:0.6rem;font-weight:600;margin-top:2px}.kgap.pos{color:#3fb950}.kgap.neg{color:#f85149}
+.wf-card,.cal-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.v2-sec-lbl{font-size:0.68rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bdr)}
+.cal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.cal-month{background:var(--sur2);border:1px solid var(--bdr);border-radius:var(--rs);padding:8px 5px;text-align:center;cursor:pointer;transition:all .15s}
+.cal-month:hover{border-color:var(--blu)}
+.cal-month.cal-urgent{border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.06)}
+.cal-month.cal-warn{border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.06)}
+.cal-month.cal-empty{opacity:.35}
+.cal-month-name{font-size:0.6rem;text-transform:uppercase;letter-spacing:.3px;color:var(--mut);margin-bottom:5px}
+.cal-month-bar{height:42px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px}
+.cal-month-fill{width:72%;border-radius:2px 2px 0 0;min-height:2px;background:var(--blu)}
+.cal-month.cal-urgent .cal-month-fill{background:var(--red)}.cal-month.cal-warn .cal-month-fill{background:var(--org)}
+.cal-month-rev{font-size:0.66rem;font-weight:600;color:var(--txt)}.cal-month-cnt{font-size:0.58rem;color:var(--dim);margin-top:1px}
+.scenario-strip{background:var(--sur);border-bottom:1px solid var(--bdr);padding:9px 22px;display:flex;flex-direction:column;gap:6px}
+.scen-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.77rem;color:var(--mut);user-select:none}
+.scen-hdr:hover{color:var(--txt)}.scen-hdr strong{color:var(--pur)}
+.scen-body{display:flex;gap:11px;flex-wrap:wrap;align-items:flex-end}
+.scen-field{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.scen-lbl{font-size:0.6rem;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.scen-inp{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:4px 8px;font-size:0.77rem;outline:none;width:100%}
+.scen-inp:focus{border-color:var(--pur)}
+.scen-result{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.28);border-radius:var(--rs);padding:7px 13px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.scen-kpi{text-align:center;min-width:72px}.scen-kpi-lbl{font-size:0.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.3px}
+.scen-kpi-val{font-size:0.88rem;font-weight:700;color:var(--pur)}.scen-kpi-delta{font-size:0.64rem;font-weight:600;margin-top:1px}
+.ap-form-grid{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.ap-field{display:flex;flex-direction:column;gap:3px;flex:1;min-width:115px}
+.ap-field-wide{flex:2;min-width:200px}
+.ap-lbl{font-size:0.62rem;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.ap-inp{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:6px 9px;font-size:0.8rem;width:100%;outline:none}
+.ap-inp:focus{border-color:var(--cyn)}
+.ap-summary{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.ap-stat{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rs);padding:5px 10px;font-size:0.74rem;color:var(--mut)}
+.ap-stat strong{color:var(--txt)}
+.ap-status-sel{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:2px 5px;font-size:0.72rem;outline:none;cursor:pointer}
+.risk-matrix-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.risk-matrix-hdr{font-size:0.68rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.v2-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;align-items:center;justify-content:center}
+.v2-modal.on{display:flex}
+.v2-mbox{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:22px 26px;max-width:480px;width:92%}
+.v2-mbox h3{font-size:0.95rem;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.v2-list{padding-left:18px;margin:6px 0 10px}
+.v2-list li{font-size:0.8rem;line-height:1.7;margin-bottom:2px}
+.v2-list.err-list li{color:var(--red)}.v2-list.warn-list li{color:var(--org)}
+.v2-macts{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:0.78rem;color:var(--mut)}
+.sc-row:last-child{border-bottom:none}
+.sc-key{background:var(--sur2);border:1px solid var(--bdr);border-radius:3px;padding:1px 7px;font-family:monospace;font-size:0.73rem;color:var(--txt);white-space:nowrap}
+.btn-v2{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:var(--rs);padding:6px 12px;font-size:0.78rem;cursor:pointer;transition:all .15s}
+.btn-v2:hover{border-color:var(--blu);color:var(--blu)}
 </style>
 <script>
 (function(){
@@ -554,6 +631,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </select>
     <input id="rnYear" type="text" class="rn-yr" value="2026" maxlength="4" oninput="updateRN()">
     <div class="rn-prev" id="rnPrev">BP2026</div>
+    <div class="rev-target-wrap" title="Revenue target for gap tracking">
+      <span>&#127919;</span>
+      <input class="rev-target-inp" id="revTargetInp" type="number" placeholder="Target USD" step="1000"
+             oninput="S.revTarget=parseFloat(this.value)||0;renderAll();" title="Net revenue target">
+    </div>
     <button class="btn-save" id="btnSave" onclick="saveSession()">💾 Save Session</button>
     <button class="btn-undo" id="btnUndo" onclick="doUndo()" disabled title="Undo (Ctrl+Z)">↩</button>
     <button class="btn-undo" id="btnRedo" onclick="doRedo()" disabled title="Redo (Ctrl+Y)">↪</button>
@@ -562,6 +644,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <button class="btn-svrpt" id="btnSaveRpt" onclick="openSaveRptModal()">💾 Save Report</button>
     <button class="btn-gen" id="btnGen" onclick="generateReport()" disabled>⬡ Generate Report</button>
     <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+    <button class="btn-v2" onclick="showShortcuts()" title="Keyboard shortcuts" style="padding:4px 10px;font-size:0.85rem;font-weight:700">?</button>
   </div>
 </header>
 
@@ -619,7 +702,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="kpi warn"><div class="kl">⚠ Difficult Renewals</div><div class="kv or" id="kDiff">$0</div><div class="ks" id="kDiffSub">Expired &gt;1 year — excluded</div></div>
     <div class="kpi"><div class="kl">Risk Exposure</div><div class="kv or" id="kRisk">$0</div><div class="ks">probability-weighted</div></div>
     <div class="kpi"><div class="kl">Opportunity Upside</div><div class="kv pu" id="kOpp">$0</div><div class="ks" id="kOppSub">0 opportunities</div></div>
-    <div class="kpi proj"><div class="kl">Net Projection</div><div class="kv ac" id="kNet">$0</div><div class="ks">retained − risk + upside</div></div>
+    <div class="kpi proj"><div class="kl">Net Projection</div><div class="kv ac" id="kNet">$0</div><div class="ks" id="kNetGap" style="margin-top:2px"></div></div>
     <div class="kscope" id="kScopePanel">
       <div class="kscope-flag" id="kScopeFlag">&#127758;</div>
       <div class="kscope-info">
@@ -628,6 +711,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div class="kscope-tags" id="kScopeD"></div>
       </div>
     </div>
+  </div>
+
+  
+  <!-- DATA FRESHNESS BADGE -->
+  <div style="padding:4px 22px 0;display:flex;align-items:center;gap:10px">
+    <span class="freshness-badge" id="freshnessBadge" style="display:none">
+      <span class="fb-dot" id="freshDot"></span>
+      <span id="freshText">No data loaded</span>
+    </span>
   </div>
 
   <!-- COMPARISON BAR -->
@@ -645,6 +737,34 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   </div>
 
   <!-- MAIN LAYOUT -->
+  <!-- SCENARIO STRIP V2 -->
+  <div class="scenario-strip" id="scenarioStrip">
+    <div class="scen-hdr" onclick="toggleScenario()">
+      <strong>&#9881; Scenario Analyzer</strong>
+      <span style="color:var(--dim);font-size:0.72rem">What-if analysis on top of current plan</span>
+      <span id="scenToggle" style="margin-left:auto">&#9660;</span>
+    </div>
+    <div class="scen-body" id="scenBody" style="display:none">
+      <div class="scen-field">
+        <div class="scen-lbl">Difficult Recovery %</div>
+        <input class="scen-inp" id="scenHXRecov" type="number" value="0" min="0" max="100" step="5" oninput="calcScenario()">
+      </div>
+      <div class="scen-field">
+        <div class="scen-lbl">Churn Recovery %</div>
+        <input class="scen-inp" id="scenChurnRecov" type="number" value="0" min="0" max="100" step="5" oninput="calcScenario()">
+      </div>
+      <div class="scen-field">
+        <div class="scen-lbl">Opp Close Rate %</div>
+        <input class="scen-inp" id="scenOppClose" type="number" value="100" min="0" max="100" step="10" oninput="calcScenario()">
+      </div>
+      <div class="scen-result" id="scenResult" style="display:none">
+        <div class="scen-kpi"><div class="scen-kpi-lbl">Scenario Net</div><div class="scen-kpi-val" id="scenNetVal">&#8212;</div></div>
+        <div class="scen-kpi"><div class="scen-kpi-lbl">vs Base Plan</div><div class="scen-kpi-delta" id="scenDelta">&#8212;</div></div>
+        <div class="scen-kpi"><div class="scen-kpi-lbl">HX Recovered</div><div class="scen-kpi-val" style="font-size:0.78rem;color:var(--grn)" id="scenHXRecovVal">&#8212;</div></div>
+        <div class="scen-kpi"><div class="scen-kpi-lbl">Churn Recovered</div><div class="scen-kpi-val" style="font-size:0.78rem;color:var(--grn)" id="scenChurnRecovVal">&#8212;</div></div>
+      </div>
+    </div>
+  </div>
   <div class="mlay">
     <!-- FILTERS -->
     <aside class="fp">
@@ -666,6 +786,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <button class="tbtn" data-tab="risks" onclick="swTab('risks',this)">⚠ Risks <span class="tbdg" id="bdgRisk">0</span></button>
         <button class="tbtn" data-tab="opps" onclick="swTab('opps',this)">✦ Opportunities <span class="tbdg" id="bdgOpp">0</span></button>
         <button class="tbtn" data-tab="assump" onclick="swTab('assump',this)">📋 Assumptions <span class="tbdg" id="bdgAssump">0</span></button>
+        <button class="tbtn" data-tab="actions" onclick="swTab('actions',this)">✓ Actions <span class="tbdg" id="bdgActions">0</span></button>
         <button class="tbtn" data-tab="insights" onclick="swTab('insights',this)">◈ Insights <span class="tbdg" id="bdgIns">●</span></button>
       </div>
 
@@ -692,6 +813,42 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
           <div class="reg-lh"><h3>Assumption Log</h3><div class="reg-tot"><strong id="assumpCount">0</strong> assumptions</div></div>
           <div class="assump-list" id="assumpBody"><div class="assump-empty">No assumptions added yet.</div></div>
         </div>
+      </div>
+      <!-- ACTION PLAN TAB V2 -->
+      <div class="tc" id="tabActions">
+        <div class="hint-box">Track follow-up actions per account. Monitor owner, deadline and completion status.</div>
+        <div class="ap-form-grid">
+          <div class="ap-field ap-field-wide">
+            <div class="ap-lbl">Account</div>
+            <input class="ap-inp" id="apAcc" placeholder="Account name...">
+          </div>
+          <div class="ap-field" style="flex:3;min-width:220px">
+            <div class="ap-lbl">Action / Follow-up</div>
+            <input class="ap-inp" id="apAct" placeholder="Describe the action to take...">
+          </div>
+          <div class="ap-field">
+            <div class="ap-lbl">Owner</div>
+            <input class="ap-inp" id="apOwner" placeholder="Responsible...">
+          </div>
+          <div class="ap-field">
+            <div class="ap-lbl">Due Date</div>
+            <input class="ap-inp" id="apDue" type="date">
+          </div>
+          <div class="ap-field">
+            <div class="ap-lbl">Category</div>
+            <select class="ap-inp" id="apCat">
+              <option value="Renewal">Renewal</option>
+              <option value="Risk Mitigation">Risk Mitigation</option>
+              <option value="Opportunity">Opportunity</option>
+              <option value="Escalation">Escalation</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+          <div style="align-self:flex-end">
+            <button class="btn-gen" onclick="addAction()" style="white-space:nowrap">+ Add Action</button>
+          </div>
+        </div>
+        <div id="actionBody"><div class="reg-empty">No actions added yet. Use the form above to track follow-up actions per account.</div></div>
       </div>
       <!-- SYSTEMS TAB -->
       <div class="tc act" id="tabSystems">
@@ -723,6 +880,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
               <th onclick="doSort('_days')">Days</th>
               <th onclick="doSort('_rev')" style="text-align:right">Revenue USD</th>
               <th onclick="doSort('Direct_vs_bundle_revenue')">Type</th>
+              <th style="text-align:center" title="Account health score 0-100">Health</th>
             </tr></thead>
             <tbody id="sysTbody"></tbody>
           </table>
@@ -733,6 +891,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <button class="pb2" id="btnPrev" onclick="goPage(-1)">← Prev</button>
             <span class="pn" id="pagN">1</span>
             <button class="pb2" id="btnNext" onclick="goPage(1)">Next →</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.73rem;color:var(--mut)">
+            Rows:
+            <select class="ps-sel" id="psSelect" onchange="setPageSize(this.value)">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="9999">All</option>
+            </select>
           </div>
         </div>
       </div>
@@ -755,7 +922,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <div class="fl2"><label>Platform</label><input type="text" class="fc2" id="rPlat" placeholder="Platform"></div>
             <div class="fl2"><label>Serial Number</label><input type="text" class="fc2" id="rSN" placeholder="Serial number"></div>
             <div class="fl2"><label>Coverage Type</label><input type="text" class="fc2" id="rCov" placeholder="Coverage type"></div>
+            <div class="fl2"><label>Risk Type</label>
+              <select class="fc2" id="riskType" onchange="onRiskTypeChange()">
+                <option value="churn">Churn (full loss)</option>
+                <option value="downgrade">Downgrade (partial)</option>
+              </select>
+            </div>
             <div class="fl2"><label>Current Annual Revenue (USD)</label><input type="number" class="fc2" id="rBaseRev" placeholder="0" oninput="calcRisk()"></div>
+            <div class="fl2 dg-row" id="rDgRow"><label>New Contract Value (USD)</label><input type="number" class="fc2" id="rNewRev" placeholder="lower amount" oninput="calcRisk()"></div>
             <div class="fl2" style="grid-column:span 2"><label>Risk Description</label><input type="text" class="fc2" id="rDesc" placeholder="e.g. Contract expiry, competitor pressure, budget cuts..."></div>
             <div class="fl2"><label>Probability (%)</label><input type="number" class="fc2" id="rProb" placeholder="0–100" min="0" max="100"></div>
             <div class="fl2"><label>Contract Ends — Month</label>
@@ -772,6 +946,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
           </div>
           <div class="calc-box" id="calcBox"></div>
           <button class="btn-add" onclick="addRisk()" style="margin-top:4px">Add Risk</button>
+        </div>
+        <div class="risk-matrix-card" id="riskMatrixCard" style="display:none">
+          <div class="risk-matrix-hdr">&#9889; Risk Priority Matrix — Probability vs Revenue at Risk (bubble size = weighted impact)</div>
+          <canvas id="riskMatrixChart" height="200"></canvas>
         </div>
         <div class="reg-list">
           <div class="reg-lh"><h3>Risk Register</h3><div class="reg-tot">Weighted exposure: <strong id="riskTot">$0</strong></div></div>
@@ -798,12 +976,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <div class="fl2"><label>Serial Number</label><input type="text" class="fc2" id="oSN" placeholder="Serial number"></div>
             <div class="fl2"><label>Coverage Type</label><input type="text" class="fc2" id="oCov" placeholder="Coverage type"></div>
             <div class="fl2"><label>Type</label>
-              <select class="fc2" id="oType">
+              <select class="fc2" id="oType" onchange="onOppTypeChange()">
                 <option>New Installation</option><option>System Upgrade</option>
-                <option>Contract Expansion</option><option>New Contract</option><option>Market Development</option>
+                <option>Contract Expansion</option><option>Contract Upgrade</option>
+                <option>New Contract</option><option>Market Development</option>
               </select>
             </div>
             <div class="fl2"><label>Expected Close Quarter</label><input type="text" class="fc2" id="oQtr" placeholder="e.g. Q3 2026"></div>
+            <div class="fl2 ug-row" id="oUgRow" style="display:none"><label>Current Contract Value (USD)</label><input type="number" class="fc2" id="oCurrentRev" placeholder="current amount" oninput="calcUpgrade()"></div>
+            <div class="fl2 ug-row" id="oUgRow2" style="display:none"><label>Upgraded Contract Value (USD)</label><input type="number" class="fc2" id="oUpgradedRev" placeholder="new higher amount" oninput="calcUpgrade()"></div>
             <div class="fl2" style="grid-column:span 2"><label>Description / Notes</label><input type="text" class="fc2" id="oDesc" placeholder="Details about this opportunity..."></div>
             <div class="fl2"><label>Expected Revenue (USD)</label><input type="number" class="fc2" id="oRev" placeholder="Annual amount"></div>
           </div>
@@ -834,6 +1015,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div class="ins-charts-row">
           <div class="ins-cw"><h4>Revenue by Contract Type (Direct / Bundle)</h4><canvas id="iCh3" height="200"></canvas></div>
           <div class="ins-cw"><h4>Systems Expiring — Timeline</h4><canvas id="iCh4" height="200"></canvas></div>
+        </div>
+        <!-- Waterfall Revenue Bridge V2 -->
+        <div class="wf-card">
+          <div class="v2-sec-lbl">&#128202; Revenue Bridge &#8212; Base to Net Projection</div>
+          <canvas id="waterfallChart" height="120"></canvas>
+        </div>
+        <!-- Renewal Calendar V2 -->
+        <div class="cal-card">
+          <div class="v2-sec-lbl">&#128197; Renewal Calendar &#8212; Next 12 Months</div>
+          <div class="cal-grid" id="renewalCalendar"></div>
         </div>
         <!-- Top accounts -->
         <div class="ins-sec">
@@ -882,6 +1073,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <button class="btn-prt" onclick="window.print()">🖨 Print / Save PDF</button>
     <button class="btn-eml" onclick="openEmailModal()">📧 Email Summary</button>
     <button class="btn-csv" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn-csv btn-xl" onclick="exportExcel()">📊 Export Excel</button>
   </div>
   <div class="rdoc">
     <div class="rcov">
@@ -970,7 +1162,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 const S = {
   raw:[], cRev:{}, churn:new Set(), risks:[], opps:[], assumps:[],
   filt:{clusters:new Set(),countries:new Set(),platforms:new Set(),revTypes:new Set(),search:''},
-  sort:{col:'_rev',dir:'desc'}, page:1, ps:50, charts:{}, iCharts:{}, _cmpData:null, _undo:[], _redo:[], cRateTarget:80
+  sort:{col:'_rev',dir:'desc'}, page:1, ps:50, charts:{}, iCharts:{}, _cmpData:null, _undo:[], _redo:[], cRateTarget:80,
+  actions:[], revTarget:0, _uploadedAt:null, _fileName:''
 };
 const TITLES={BP:{t:'Business Plan',s:'Annual Revenue Forecast & Strategic Overview'},JU:{t:'June Update',s:'Mid-Year Revenue Review & Forecast Adjustment'},NU:{t:'November Update',s:'Year-End Revenue Review & Forward Planning'}};
 const COLORS=['#c62828','#1565c0','#2e7d32','#e65100','#6a1b9a','#00695c','#37474f','#4e342e','#880e4f','#1a237e','#f57f17','#00796b'];
@@ -1013,9 +1206,11 @@ function autoSave(){
       reportType:$('rnType').value, reportYear:$('rnYear').value,
       savedAt:new Date().toISOString(),
       csv:S._csv||'',
+      _fileName:S._fileName||'',
+      _uploadedAt:S._uploadedAt?S._uploadedAt.toISOString():null,
       cRateTarget:S.cRateTarget||80,
       churn:[...S.churn], cRev:S.cRev,
-      risks:S.risks, opps:S.opps, assumps:S.assumps||[],
+      risks:S.risks, opps:S.opps, assumps:S.assumps||[], actions:S.actions||[], revTarget:S.revTarget||0,
       filters:{
         clusters:[...S.filt.clusters],countries:[...S.filt.countries],
         platforms:[...S.filt.platforms],revTypes:[...S.filt.revTypes],
@@ -1044,11 +1239,19 @@ function restoreSession(){
         return{...r,_id:i,_rev:rev,_days:isNaN(days)?null:days};
       });
       S.cRateTarget=st.cRateTarget||80;
+      S._fileName=st._fileName||'';
+      S._uploadedAt=st._uploadedAt?new Date(st._uploadedAt):null;
       S.churn=new Set(st.churn||[]);
       S.cRev=st.cRev||{};
       S.risks=st.risks||[];
       S.opps=st.opps||[];
       S.assumps=st.assumps||[];
+      S.actions=st.actions||[];
+      S.revTarget=st.revTarget||0;
+      var _rti=$('revTargetInp');if(_rti&&S.revTarget)_rti.value=S.revTarget;
+      S.actions=st.actions||[];
+      S.revTarget=st.revTarget||0;
+      var _rti=$('revTargetInp');if(_rti&&S.revTarget)_rti.value=S.revTarget;
       const fl=st.filters||{};
       S.filt.clusters=new Set(fl.clusters||[]);
       S.filt.countries=new Set(fl.countries||[]);
@@ -1184,6 +1387,7 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');co
 function handleFile(e){const f=e.target.files[0];if(f)parseFile(f)}
 
 function parseFile(file){
+  S._fileName=file.name||'';
   const r2=new FileReader();r2.onload=e=>{S._csv=e.target.result;};r2.readAsText(file,'ISO-8859-1');
   Papa.parse(file,{header:true,skipEmptyLines:true,encoding:'ISO-8859-1',complete:res=>parseRows(res.data)});
 }
@@ -1193,13 +1397,15 @@ function parseText(text){
 }
 function isTM(r){return !!(r.Coverage_type&&r.Coverage_type.toUpperCase().includes('T&M'))}
 function parseRows(data){
+  var _v=validateCSV(data);
+  if(!_v.ok||_v.warnings.length){showCSVError(_v);if(!_v.ok)return;}
   S.raw=data.map((r,i)=>{
     const rev=parseFloat(r.USD_annual_amount)||0;
     const d=r.days_to_contract_renew;
     const days=(d===''||d==null||d==='not_contract')?null:parseInt(d);
     return{...r,_id:i,_rev:rev,_days:isNaN(days)?null:days};
   });
-  S.churn.clear();S.cRev={};S.page=1;
+  S.churn.clear();S.cRev={};S.page=1;S._uploadedAt=new Date();
   // T&M contracts default to churn — revenue excluded
   S.raw.forEach(r=>{if(isTM(r))S.churn.add(r._id)});
   initFilts();renderAll();
@@ -1331,12 +1537,29 @@ function renderAll(){
   autoSave();
   const f=getFiltered();
   const sm=calcSummary(f);
-  updateBar(f,sm);renderTable(f,sm);updateBadges(f);updateScope();updateInsight(f,sm);renderPlatformTable();
+  updateBar(f,sm);renderTable(f,sm);updateBadges(f);updateScope();updateInsight(f,sm);renderPlatformTable();renderRiskMatrix();
   // Mark insights as dirty
   S.insightsDirty=true;
 }
 
+function updateFreshness(){
+  var b=$('freshnessBadge'),d=$('freshDot'),t=$('freshText');
+  if(!b||!S._uploadedAt)return;
+  b.style.display='inline-flex';
+  var now=new Date();
+  var diffMin=Math.floor((now-S._uploadedAt)/60000);
+  var stale=diffMin>120;
+  d.className='fb-dot'+(stale?' stale':'');
+  var ago='';
+  if(diffMin<1)ago='just now';
+  else if(diffMin<60)ago=diffMin+'m ago';
+  else ago=Math.floor(diffMin/60)+'h '+( diffMin%60)+'m ago';
+  var name=S._fileName?S._fileName.replace(/\.csv$/i,''):'CSV';
+  t.textContent=name+' · '+S.raw.length+' rows · loaded '+ago;
+}
+
 function updateBar(f,sm){
+  updateFreshness();
   setText('kBase',fmt(sm.base));setText('kBaseSub',`${sm.inScopeCount} systems in scope`);
   setText('kRet',fmt(sm.retRev));setText('kRetSub',`${sm.retCnt} renewing`);
   setText('kChurn',sm.chnRev>0?'-'+fmt(sm.chnRev):'$0');setText('kChurnSub',`${sm.chnCnt} systems lost`);
@@ -1344,6 +1567,11 @@ function updateBar(f,sm){
   setText('kRisk',sm.riskW>0?'-'+fmt(sm.riskW):'$0');
   setText('kOpp',sm.oppUp>0?'+'+fmt(sm.oppUp):'$0');setText('kOppSub',`${S.opps.length} opportunities`);
   setText('kNet',fmt(sm.net));
+  var kng=$('kNetGap');
+  if(kng){
+    if(S.revTarget>0){var gap=sm.net-S.revTarget;kng.textContent=(gap>=0?'+':'')+fmt(Math.abs(gap))+' vs target';kng.className='kgap '+(gap>=0?'pos':'neg');}
+    else kng.textContent='';
+  }
   // Contract Rate — from filtered rows (respects active filters)
   const crTotal=f.length;
   const crActive=f.filter(r=>r._days!==null&&r._days>0&&!isTM(r)).length;
@@ -1446,7 +1674,7 @@ function updateScope(){
   if(S.filt.search) tags.push('"'+S.filt.search+'"');
   if(tagsEl) tagsEl.textContent=tags.join(' · ')||'';
 }
-function updateBadges(f){setText('bdgSys',f.length);setText('bdgRisk',S.risks.length);setText('bdgOpp',S.opps.length);setText('bdgAssump',S.assumps.length);setText('assumpCount',S.assumps.length)}
+function updateBadges(f){setText('bdgSys',f.length);setText('bdgRisk',S.risks.length);setText('bdgOpp',S.opps.length);setText('bdgAssump',S.assumps.length);setText('assumpCount',S.assumps.length);setText('bdgActions',S.actions.length);}
 
 // ===== TABLE =====
 let sortState={col:'_rev',dir:'desc'};
@@ -1514,6 +1742,7 @@ function renderTable(filtered,sm){
       <td>${daysBadge}</td>
       <td><div class="rc"><span class="rv" id="rv_${r._id}">${revStr}</span><button class="re" onclick="editRev(${r._id})" title="Override revenue">✏</button></div></td>
       <td><span class="tb ${tbc}">${tbl}</span></td>
+      <td style="text-align:center">${healthBadge(calcHealthScore(r))}</td>
     </tr>`;
   }).join('');
 }
@@ -1545,6 +1774,12 @@ function saveRev(id,val){
 }
 
 // ===== PAGINATION =====
+function setPageSize(val){
+  S.ps=parseInt(val)||50;
+  S.page=1;
+  renderTable(getFiltered());
+}
+
 function goPage(dir){
   const f=getFiltered();const pages=Math.max(1,Math.ceil(f.length/S.ps));
   S.page=Math.max(1,Math.min(S.page+dir,pages));renderTable(f);
@@ -1554,10 +1789,11 @@ function goPage(dir){
 function swTab(name,btn){
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('act'));
   btn.classList.add('act');
-  ['tabSystems','tabRisks','tabOpps','tabInsights','tabAssump'].forEach(id=>{const e=$(id);if(e){e.classList.remove('act');e.style.display='none'}});
-  const map={systems:'tabSystems',risks:'tabRisks',opps:'tabOpps',insights:'tabInsights',assump:'tabAssump'};
+  ['tabSystems','tabRisks','tabOpps','tabInsights','tabAssump','tabActions'].forEach(id=>{const e=$(id);if(e){e.classList.remove('act');e.style.display='none'}});
+  const map={systems:'tabSystems',risks:'tabRisks',opps:'tabOpps',insights:'tabInsights',assump:'tabAssump',actions:'tabActions'};
   const el=$(map[name]);el.style.display='flex';el.classList.add('act');
   if(name==='insights'&&S.insightsDirty)renderInsights();
+  if(name==='actions')renderActions();
 }
 
 // ===== AUTOCOMPLETE =====
@@ -1597,12 +1833,48 @@ function selSys(id,ctx){
 }
 
 // ===== RISK CALC =====
+function onRiskTypeChange(){
+  const isDg=$('riskType').value==='downgrade';
+  var row=$('rDgRow');
+  if(row)row.style.display=isDg?'block':'none';
+  if(!isDg&&$('rNewRev'))$('rNewRev').value='';
+  calcRisk();
+}
 function calcRisk(){
+  const isDg=$('riskType')&&$('riskType').value==='downgrade';
   const baseRev=parseFloat($('rBaseRev').value)||0;
+  const newRev=isDg?(parseFloat($('rNewRev').value)||0):0;
   const mon=parseInt($('rMon').value);
   const yr=parseInt($('rYr').value);
   const repYr=parseInt($('rnYear').value)||new Date().getFullYear();
   const box=$('calcBox');
+  if(isDg){
+    // Downgrade: delta = current - new, prorated by months remaining
+    if(!baseRev){$('rImpCalc').value='';box.className='calc-box';return}
+    if(newRev>=baseRev){
+      box.className='calc-box on';box.style.background='rgba(248,81,73,.1)';box.style.borderColor='rgba(248,81,73,.3)';box.style.color='var(--red)';
+      box.textContent='New contract value must be lower than current revenue for a downgrade.';
+      $('rImpCalc').value='';$('rImpCalc').dataset.raw='';return;
+    }
+    const delta=baseRev-newRev;
+    let impact=delta;
+    let note='annual delta';
+    if(mon&&yr){
+      let months;
+      if(yr<repYr)months=12;
+      else if(yr===repYr)months=12-mon;
+      else months=0;
+      impact=(delta/12)*months;
+      const monName=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1];
+      note=`${monName} ${yr}, ${months} months prorated`;
+    }
+    $('rImpCalc').value=fmt(impact);
+    $('rImpCalc').dataset.raw=impact.toFixed(0);
+    box.className='calc-box on';box.style.background='rgba(210,153,34,.1)';box.style.borderColor='rgba(210,153,34,.3)';box.style.color='#d29922';
+    box.textContent='Downgrade: '+fmt(baseRev)+' → '+fmt(newRev)+' = -'+fmt(delta)+'/yr delta ('+note+') → '+fmt(impact)+' impact';
+    return;
+  }
+  // Churn mode (original logic)
   if(!baseRev||!mon||!yr){$('rImpCalc').value='';box.className='calc-box';return}
   let months;
   if(yr<repYr)months=12;
@@ -1629,16 +1901,20 @@ function addRisk(){
   const desc=$('rDesc').value.trim(),prob=parseFloat($('rProb').value);
   const impact=parseFloat($('rImpCalc').dataset?.raw||$('rImpCalc').value.replace(/[$,]/g,''));
   const mon=parseInt($('rMon').value),yr=parseInt($('rYr').value);
+  const rType=($('riskType')&&$('riskType').value)||'churn';
+  const newRevVal=rType==='downgrade'?(parseFloat($('rNewRev').value)||0):null;
   if(!cust||!desc||isNaN(prob)||isNaN(impact)){alert('Required: Customer, Description, Probability %, and either select a month/year (auto-calc) or enter Revenue at Risk.');return}
   pushHistory();
   const monName=mon?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1]:'–';
   const endStr=mon&&yr?`${monName} ${yr}`:'–';
-  S.risks.push({id:Date.now(),cust,plat,sn,cov,desc,prob:Math.min(100,Math.max(0,prob)),impact,endStr});
+  S.risks.push({id:Date.now(),cust,plat,sn,cov,desc,prob:Math.min(100,Math.max(0,prob)),impact,endStr,rType,newRevVal,baseRevVal:parseFloat($('rBaseRev').value)||0});
   ['rSrch','rCust','rPlat','rSN','rCov','rDesc','rProb','rMon','rYr'].forEach(i=>$(i).value='');
+  if($('riskType')){$('riskType').value='churn';onRiskTypeChange();}
+  if($('rNewRev'))$('rNewRev').value='';
   $('rImpCalc').value='';$('rImpCalc').dataset.raw='';$('calcBox').className='calc-box';
-  renderRisks();renderAll();
+  renderRisks();renderRiskMatrix();renderAll();
 }
-function delRisk(id){pushHistory();S.risks=S.risks.filter(r=>r.id!==id);renderRisks();renderAll()}
+function delRisk(id){pushHistory();S.risks=S.risks.filter(r=>r.id!==id);renderRisks();renderRiskMatrix();renderAll()}
 function renderRisks(){
   const tot=S.risks.reduce((s,r)=>s+(r.prob/100)*r.impact,0);
   setText('riskTot',fmt(tot));
@@ -1646,16 +1922,22 @@ function renderRisks(){
   if(!S.risks.length){body.innerHTML='<div class="reg-empty">No risks added yet. Search a system above to get started.</div>';return}
   body.innerHTML=`<table class="dt"><thead><tr>
     <th>Customer</th><th>SN</th><th>Platform</th><th>Coverage</th><th>Description</th><th>End</th>
-    <th style="text-align:right">Prob.</th><th style="text-align:right">Revenue at Risk</th>
+    <th style="text-align:right">Prob.</th><th style="text-align:right">Revenue Impact</th>
     <th style="text-align:right">Weighted</th><th style="width:36px"></th>
   </tr></thead><tbody>${S.risks.map(r=>{
     const pCls=r.prob>=70?'hi':r.prob>=40?'md':'lo';
+    const isDg=r.rType==='downgrade';
+    const typeBadge=isDg?'<span class="badge-dg">Downgrade</span>':'<span style="font-size:.67rem;color:var(--mut)">Churn</span>';
+    const revCell=isDg
+      ?`<td style="text-align:right"><span style="font-size:.72rem;color:var(--mut)">${fmt(r.baseRevVal||0)} → </span><span style="color:#d29922;font-weight:600">${fmt(r.newRevVal||0)}</span></td>`
+      :`<td style="text-align:right">${fmt(r.impact)}</td>`;
     return`<tr>
-      <td><strong>${esc(r.cust)}</strong></td><td class="mu" style="font-size:.73rem;font-family:monospace">${esc(r.sn||'–')}</td>
+      <td><strong>${esc(r.cust)}</strong><br><span style="margin-top:2px;display:block">${typeBadge}</span></td>
+      <td class="mu" style="font-size:.73rem;font-family:monospace">${esc(r.sn||'–')}</td>
       <td>${esc(r.plat||'–')}</td><td class="mu" style="font-size:.73rem">${esc(r.cov||'–')}</td>
       <td class="mu">${esc(r.desc)}</td><td class="mu">${esc(r.endStr||'–')}</td>
       <td style="text-align:right"><span class="pb ${pCls}">${r.prob}%</span></td>
-      <td style="text-align:right">${fmt(r.impact)}</td>
+      ${revCell}
       <td style="text-align:right;color:var(--org);font-weight:600">-${fmt((r.prob/100)*r.impact)}</td>
       <td><button class="bsm dng" onclick="delRisk(${r.id})">✕</button></td>
     </tr>`;
@@ -1663,15 +1945,54 @@ function renderRisks(){
 }
 
 // ===== OPPORTUNITIES =====
+function onOppTypeChange(){
+  var isUg=$('oType').value==='Contract Upgrade';
+  var r1=$('oUgRow'),r2=$('oUgRow2');
+  if(r1)r1.style.display=isUg?'block':'none';
+  if(r2)r2.style.display=isUg?'block':'none';
+  if(!isUg){
+    if($('oCurrentRev'))$('oCurrentRev').value='';
+    if($('oUpgradedRev'))$('oUpgradedRev').value='';
+    if($('oRev'))$('oRev').readOnly=false;
+  } else {
+    calcUpgrade();
+  }
+}
+function calcUpgrade(){
+  var cur=parseFloat($('oCurrentRev').value)||0;
+  var upg=parseFloat($('oUpgradedRev').value)||0;
+  var revField=$('oRev');
+  if(!revField)return;
+  if(upg>0&&upg>cur){
+    var delta=upg-cur;
+    revField.value=delta.toFixed(0);
+    revField.readOnly=true;
+    revField.title='Auto-calculated: '+fmt(upg)+' - '+fmt(cur)+' = '+fmt(delta)+' net upside';
+  } else if(upg>0&&upg<=cur){
+    revField.value='';
+    revField.readOnly=false;
+    revField.title='Upgraded value must be higher than current value';
+  } else {
+    revField.readOnly=false;
+    revField.title='';
+  }
+}
+
 function addOpp(){
   const cust=$('oCust').value.trim(),plat=$('oPlat').value.trim();
   const sn=$('oSN').value.trim(),cov=$('oCov').value.trim();
   const type=$('oType').value,qtr=$('oQtr').value.trim();
   const desc=$('oDesc').value.trim(),rev=parseFloat($('oRev').value);
-  if(!cust||isNaN(rev)){alert('Required: Customer and Expected Revenue.');return}
+  const isUg=type==='Contract Upgrade';
+  const currentRevVal=isUg?(parseFloat($('oCurrentRev').value)||0):null;
+  const upgradedRevVal=isUg?(parseFloat($('oUpgradedRev').value)||0):null;
+  if(!cust||isNaN(rev)||rev<=0){alert('Required: Customer and Expected Revenue (upside).');return}
   pushHistory();
-  S.opps.push({id:Date.now(),cust,plat,sn,cov,type,qtr,desc,revenue:rev});
+  S.opps.push({id:Date.now(),cust,plat,sn,cov,type,qtr,desc,revenue:rev,currentRevVal,upgradedRevVal});
   ['oSrch','oCust','oPlat','oSN','oCov','oQtr','oDesc','oRev'].forEach(i=>$(i).value='');
+  if($('oCurrentRev'))$('oCurrentRev').value='';
+  if($('oUpgradedRev'))$('oUpgradedRev').value='';
+  if($('oType'))onOppTypeChange();
   renderOpps();renderAll();
 }
 function delOpp(id){pushHistory();S.opps=S.opps.filter(o=>o.id!==id);renderOpps();renderAll()}
@@ -1681,14 +2002,21 @@ function renderOpps(){
   if(!S.opps.length){body.innerHTML='<div class="reg-empty">No opportunities added yet.</div>';return}
   body.innerHTML=`<table class="dt"><thead><tr>
     <th>Customer</th><th>Platform</th><th>Type</th><th>Description</th><th>Quarter</th>
-    <th style="text-align:right">Expected Revenue</th><th style="width:36px"></th>
-  </tr></thead><tbody>${S.opps.map(o=>`<tr>
-    <td><strong>${esc(o.cust)}</strong></td><td>${esc(o.plat||'–')}</td>
-    <td><span class="tb bun">${esc(o.type)}</span></td>
-    <td class="mu">${esc(o.desc||'–')}</td><td class="mu">${esc(o.qtr||'–')}</td>
-    <td style="text-align:right;color:var(--grn);font-weight:600">+${fmt(o.revenue)}</td>
-    <td><button class="bsm dng" onclick="delOpp(${o.id})">✕</button></td>
-  </tr>`).join('')}</tbody></table>`;
+    <th style="text-align:right">Revenue Upside</th><th style="width:36px"></th>
+  </tr></thead><tbody>${S.opps.map(o=>{
+    const isUg=o.type==='Contract Upgrade';
+    const revCell=isUg&&o.currentRevVal&&o.upgradedRevVal
+      ?`<td style="text-align:right"><span style="font-size:.72rem;color:var(--mut)">${fmt(o.currentRevVal)} → ${fmt(o.upgradedRevVal)}<br></span><span style="color:var(--grn);font-weight:600">+${fmt(o.revenue)} net</span></td>`
+      :`<td style="text-align:right;color:var(--grn);font-weight:600">+${fmt(o.revenue)}</td>`;
+    const typeBadge=isUg?'<span class="badge-ug">Upgrade</span>':('<span class="tb bun">'+esc(o.type)+'</span>');
+    return`<tr>
+      <td><strong>${esc(o.cust)}</strong></td><td>${esc(o.plat||'–')}</td>
+      <td>${typeBadge}</td>
+      <td class="mu">${esc(o.desc||'–')}</td><td class="mu">${esc(o.qtr||'–')}</td>
+      ${revCell}
+      <td><button class="bsm dng" onclick="delOpp(${o.id})">✕</button></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
 }
 
 // ===== INSIGHTS =====
@@ -1796,6 +2124,9 @@ function renderInsights(){
   </tr>`).join('')}</tbody></table>`
   :'<div class="reg-empty">No systems expired >1 year in the current filter scope.</div>';
 
+  var _sm2=calcSummary(filtered);
+  renderWaterfallChart(_sm2);
+  renderRenewalCalendar(filtered);
   S.insightsDirty=false;
 }
 
@@ -2267,6 +2598,158 @@ function sendEmail(){
 
 
 // ===== EXPORT CSV =====
+function exportExcel(){
+  if(!window.XLSX){alert('SheetJS not loaded. Please reload the app with an internet connection.');return;}
+  var filtered=getFiltered();
+  var sm=calcSummary(filtered);
+  var inScope=filtered.filter(function(r){return!isHX(r);});
+  var difficult=filtered.filter(function(r){return isHX(r);});
+  var retained=inScope.filter(function(r){return!S.churn.has(r._id);});
+  var churned=inScope.filter(function(r){return S.churn.has(r._id);});
+  var year=$('rnYear').value||new Date().getFullYear();
+  var type=$('rnType').value||'BP';
+  var code=type+year;
+  var wb=XLSX.utils.book_new();
+
+  // ── helper: set column widths
+  function setCols(ws,widths){ws['!cols']=widths.map(function(w){return{wch:w};});}
+
+  // ── Sheet 1: Summary ──────────────────────────────────────────────
+  var platMapS={};
+  retained.forEach(function(r){
+    var p=r.Platform||'Unknown';
+    if(!platMapS[p])platMapS[p]={rev:0,cnt:0};
+    platMapS[p].rev+=getRev(r);platMapS[p].cnt++;
+  });
+  var topPlats=Object.keys(platMapS).sort(function(a,b){return platMapS[b].rev-platMapS[a].rev;});
+
+  var sumData=[
+    ['JJV Business Plan Tool — '+code,'','Generated:',new Date().toLocaleDateString()],
+    [],
+    ['REVENUE SUMMARY','Value (USD)'],
+    ['Base Revenue (In-Scope)',sm.base],
+    ['Retained Revenue',sm.retRev],
+    ['Churn Revenue',sm.chnRev],
+    ['Difficult to Renew (Excluded)',sm.diffRev],
+    ['Risk-Weighted Exposure',sm.riskW],
+    ['Opportunity Upside',sm.oppUp],
+    ['Net Plan Revenue',sm.net],
+    [],
+    ['CONTRACT COUNTS','Count'],
+    ['Retained Contracts',sm.retCnt],
+    ['Churned Contracts',sm.chnCnt],
+    ['Difficult to Renew',sm.diffCnt],
+    ['Total In-Scope',sm.inScopeCount],
+    [],
+    ['PLATFORM REVENUE BREAKDOWN','Revenue (USD)','Contracts','% of Retained']
+  ];
+  topPlats.forEach(function(p){
+    var pct=sm.retRev>0?platMapS[p].rev/sm.retRev:0;
+    sumData.push([p,platMapS[p].rev,platMapS[p].cnt,pct]);
+  });
+  var wsSummary=XLSX.utils.aoa_to_sheet(sumData);
+  setCols(wsSummary,[34,16,12,16]);
+  XLSX.utils.book_append_sheet(wb,wsSummary,'Summary');
+
+  // ── Sheet 2: By Platform ──────────────────────────────────────────
+  var platData=[['Platform','Revenue (USD)','Contracts','% of Retained']];
+  topPlats.forEach(function(p){
+    var pct=sm.retRev>0?platMapS[p].rev/sm.retRev:0;
+    platData.push([p,platMapS[p].rev,platMapS[p].cnt,pct]);
+  });
+  var wsPlat=XLSX.utils.aoa_to_sheet(platData);
+  setCols(wsPlat,[20,16,12,16]);
+  XLSX.utils.book_append_sheet(wb,wsPlat,'By Platform');
+
+  // ── Sheet 3: By Country ───────────────────────────────────────────
+  var ctryMap={};
+  retained.forEach(function(r){
+    var ct=r.Country||'Unknown';
+    if(!ctryMap[ct])ctryMap[ct]={rev:0,cnt:0,cluster:r.Cluster||''};
+    ctryMap[ct].rev+=getRev(r);ctryMap[ct].cnt++;
+  });
+  var ctryData=[['Country','Cluster','Revenue (USD)','Contracts','% of Retained']];
+  Object.keys(ctryMap).sort().forEach(function(ct){
+    var pct=sm.retRev>0?ctryMap[ct].rev/sm.retRev:0;
+    ctryData.push([ct,ctryMap[ct].cluster,ctryMap[ct].rev,ctryMap[ct].cnt,pct]);
+  });
+  var wsCtry=XLSX.utils.aoa_to_sheet(ctryData);
+  setCols(wsCtry,[18,14,16,12,16]);
+  XLSX.utils.book_append_sheet(wb,wsCtry,'By Country');
+
+  // ── Contract columns helper
+  var contractHdr=['Account','Country','Cluster','Platform','Serial Number','Coverage Type','End Date','Days','Rev Type','Annual Revenue (USD)'];
+  function contractRow(r){
+    return[
+      r.account_name||'',r.Country||'',r.Cluster||'',r.Platform||'',
+      r.Serial_number||'',r.Coverage_type||'',
+      r.end_date&&r.end_date!=='not_contract'?r.end_date:'',
+      r._days!=null?r._days:'',
+      r.Direct_vs_bundle_revenue||'',
+      getRev(r)
+    ];
+  }
+  var contractCols=[30,14,14,16,18,22,12,8,14,18];
+
+  // ── Sheet 4: Retained ─────────────────────────────────────────────
+  var retData=[contractHdr];
+  retained.forEach(function(r){retData.push(contractRow(r));});
+  var wsRet=XLSX.utils.aoa_to_sheet(retData);
+  setCols(wsRet,contractCols);
+  XLSX.utils.book_append_sheet(wb,wsRet,'Retained');
+
+  // ── Sheet 5: Churned ──────────────────────────────────────────────
+  var chnData=[contractHdr];
+  churned.forEach(function(r){chnData.push(contractRow(r));});
+  var wsChn=XLSX.utils.aoa_to_sheet(chnData);
+  setCols(wsChn,contractCols);
+  XLSX.utils.book_append_sheet(wb,wsChn,'Churned');
+
+  // ── Sheet 6: Difficult to Renew ───────────────────────────────────
+  var diffHdr=['Account','Country','Cluster','Platform','Serial Number','Coverage Type','End Date','Days Expired','Rev Type','Annual Revenue (USD)'];
+  var diffData=[diffHdr];
+  difficult.forEach(function(r){
+    diffData.push([
+      r.account_name||'',r.Country||'',r.Cluster||'',r.Platform||'',
+      r.Serial_number||'',r.Coverage_type||'',
+      r.end_date&&r.end_date!=='not_contract'?r.end_date:'',
+      r._days!=null?Math.abs(r._days):'',
+      r.Direct_vs_bundle_revenue||'',
+      getRev(r)
+    ]);
+  });
+  var wsDiff=XLSX.utils.aoa_to_sheet(diffData);
+  setCols(wsDiff,contractCols);
+  XLSX.utils.book_append_sheet(wb,wsDiff,'Difficult to Renew');
+
+  // ── Sheet 7: Risk Register ────────────────────────────────────────
+  var riskData=[['Account','Platform','Serial','Coverage','Description','Contract End','Probability (%)','Revenue at Risk (USD)','Weighted Impact (USD)']];
+  S.risks.forEach(function(rk){
+    riskData.push([rk.cust||'',rk.plat||'',rk.sn||'',rk.cov||'',rk.desc||'',rk.endStr||'',rk.prob,rk.impact,rk.prob/100*rk.impact]);
+  });
+  var wsRisk=XLSX.utils.aoa_to_sheet(riskData);
+  setCols(wsRisk,[28,16,16,20,36,14,14,20,20]);
+  XLSX.utils.book_append_sheet(wb,wsRisk,'Risks');
+
+  // ── Sheet 8: Opportunities ────────────────────────────────────────
+  var oppData=[['Account','Platform','Serial','Coverage','Type','Description','Quarter','Expected Revenue (USD)']];
+  S.opps.forEach(function(op){
+    oppData.push([op.cust||'',op.plat||'',op.sn||'',op.cov||'',op.type||'',op.desc||'',op.qtr||'',op.revenue]);
+  });
+  var wsOpp=XLSX.utils.aoa_to_sheet(oppData);
+  setCols(wsOpp,[28,16,16,20,14,36,10,22]);
+  XLSX.utils.book_append_sheet(wb,wsOpp,'Opportunities');
+
+  // ── Sheet 9: Assumptions ──────────────────────────────────────────
+  var assData=[['Category','Assumption']];
+  S.assumps.forEach(function(a){assData.push([a.cat||'',a.txt||'']);});
+  var wsAss=XLSX.utils.aoa_to_sheet(assData);
+  setCols(wsAss,[20,60]);
+  XLSX.utils.book_append_sheet(wb,wsAss,'Assumptions');
+
+  // ── Download ──────────────────────────────────────────────────────
+  XLSX.writeFile(wb,code+'_BusinessPlan.xlsx');
+}
 function exportCSV(){
   var filtered=getFiltered();
   var sm=calcSummary(filtered);
@@ -2879,10 +3362,285 @@ function _updUR(){
 
 document.addEventListener('keydown', function(e){
   var ctrl=e.ctrlKey||e.metaKey;
-  if(ctrl && e.key==='z' && !e.shiftKey){ e.preventDefault(); doUndo(); }
-  if(ctrl && (e.key==='y' || (e.key==='z' && e.shiftKey))){ e.preventDefault(); doRedo(); }
+  if(ctrl && e.key==='z' && !e.shiftKey){ e.preventDefault(); doUndo(); return; }
+  if(ctrl && (e.key==='y'||(e.key==='z'&&e.shiftKey))){ e.preventDefault(); doRedo(); return; }
+  if(ctrl && e.key==='s'&&!e.shiftKey){ e.preventDefault(); saveSession(); showToast('Session saved'); return; }
+  if(ctrl && e.key==='p'){ e.preventDefault(); if(!$('btnGen').disabled)generateReport(); return; }
+  if(ctrl && e.key==='e'){ e.preventDefault(); exportCSV(); return; }
+  if(ctrl && e.key==='t'){ e.preventDefault(); toggleTheme(); return; }
+  if(ctrl && e.key>='1' && e.key<='6'){
+    e.preventDefault();
+    var tabs=['systems','risks','opps','assump','actions','insights'];
+    var idx=parseInt(e.key)-1;
+    if(idx<tabs.length){
+      var btns=document.querySelectorAll('.tbtn');
+      var found=[...btns].find(function(b){return b.dataset.tab===tabs[idx];});
+      if(found)swTab(tabs[idx],found);
+    }
+    return;
+  }
+  if(e.key==='?'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA'){
+    showShortcuts();
+  }
 });
 
+
+
+// ============================================================
+// V2 NEW FUNCTIONS
+// ============================================================
+
+// --- Health Score ---
+function calcHealthScore(r){
+  if(isHX(r)) return 5;
+  var score=100;
+  if(isTM(r)) score-=30;
+  if(r._days!==null){
+    if(r._days<0) score-=35;
+    else if(r._days<90) score-=20;
+    else if(r._days<180) score-=10;
+  }
+  if(S.churn.has(r._id)) score-=40;
+  if(!getRev(r)) score-=15;
+  return Math.max(0,Math.min(100,score));
+}
+function healthBadge(score){
+  var cls=score>=70?'hs-hi':score>=40?'hs-md':'hs-lo';
+  return '<span class="hs-badge '+cls+'">'+score+'</span>';
+}
+
+// --- Scenario Analyzer ---
+function toggleScenario(){
+  var b=$('scenBody'),t=$('scenToggle');
+  if(!b)return;
+  var open=b.style.display!=='none';
+  b.style.display=open?'none':'flex';
+  if(t)t.textContent=open?'\u25BC':'\u25B2';
+  if(!open)calcScenario();
+}
+function calcScenario(){
+  if(!S.raw.length)return;
+  var filtered=getFiltered();
+  var sm=calcSummary(filtered);
+  var recovPct=parseFloat($('scenHXRecov').value)||0;
+  var churnRecovPct=parseFloat($('scenChurnRecov').value)||0;
+  var oppClosePct=parseFloat($('scenOppClose').value);if(isNaN(oppClosePct))oppClosePct=100;
+  var difficult=filtered.filter(function(r){return isHX(r);});
+  var recovHX=difficult.reduce(function(s,r){return s+getRev(r);},0)*recovPct/100;
+  var churned=filtered.filter(function(r){return !isHX(r)&&S.churn.has(r._id);});
+  var recovChurn=churned.reduce(function(s,r){return s+getRev(r);},0)*churnRecovPct/100;
+  var oppUp=sm.oppUp*oppClosePct/100;
+  var scenNet=sm.retRev+recovHX+recovChurn-sm.riskW+oppUp;
+  var delta=scenNet-sm.net;
+  var res=$('scenResult');if(res)res.style.display='flex';
+  setText('scenNetVal',fmt(scenNet));
+  var dEl=$('scenDelta');
+  if(dEl){dEl.textContent=(delta>=0?'+':'')+fmt(Math.abs(delta));dEl.style.color=delta>=0?'var(--grn)':'var(--red)';}
+  setText('scenHXRecovVal',recovHX>0?'+'+fmt(recovHX):'$0');
+  setText('scenChurnRecovVal',recovChurn>0?'+'+fmt(recovChurn):'$0');
+}
+
+// --- Waterfall Revenue Bridge ---
+function renderWaterfallChart(sm){
+  var ctx=$('waterfallChart');
+  if(!ctx)return;
+  if(S.iCharts.waterfall){try{S.iCharts.waterfall.destroy();}catch(e){}}
+  var labels=['Base','- Churn','Retained','- Risk','+ Upside','Net'];
+  var values=[sm.base,-sm.chnRev,sm.retRev,-sm.riskW,sm.oppUp,sm.net];
+  var cols=['#388bfd','#f85149','#3fb950','#d29922','#a78bfa','#da3633'];
+  S.iCharts.waterfall=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:values.map(function(v){return Math.abs(v);}),
+        backgroundColor:cols,
+        borderRadius:4,
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){
+          var v=values[ctx.dataIndex];
+          return (v>=0?'+':'-')+fmt(Math.abs(v));
+        }}}
+      },
+      scales:{
+        y:{ticks:{callback:function(v){return '$'+(v>=1000?(v/1000).toFixed(0)+'K':v);},color:'#8b949e'},grid:{color:'rgba(127,127,127,.1)'}},
+        x:{ticks:{color:'#8b949e'},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// --- Renewal Calendar ---
+function renderRenewalCalendar(filtered){
+  var el=$('renewalCalendar');
+  if(!el)return;
+  var inScope=filtered.filter(function(r){return !isHX(r);});
+  var today=new Date();today.setHours(0,0,0,0);
+  var months=[];
+  for(var i=0;i<12;i++){
+    var d=new Date(today.getFullYear(),today.getMonth()+i,1);
+    months.push({year:d.getFullYear(),month:d.getMonth(),
+      label:d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}),
+      rev:0,cnt:0,daysFromNow:Math.round((d-today)/86400000)});
+  }
+  inScope.forEach(function(r){
+    var d=r._days;
+    if(d===null||d<0)return;
+    var exp=new Date(today.getTime()+d*86400000);
+    for(var i=0;i<months.length;i++){
+      var m=months[i];
+      if(exp.getFullYear()===m.year&&exp.getMonth()===m.month){
+        m.rev+=getRev(r);m.cnt++;break;
+      }
+    }
+  });
+  var maxRev=Math.max.apply(null,months.map(function(m){return m.rev;}));
+  if(maxRev<=0)maxRev=1;
+  el.innerHTML=months.map(function(m){
+    var h=Math.max(2,Math.round((m.rev/maxRev)*40));
+    var cls='cal-month'+(m.cnt===0?' cal-empty':m.daysFromNow<90?' cal-urgent':m.daysFromNow<180?' cal-warn':'');
+    return '<div class="'+cls+'" title="'+m.label+': '+m.cnt+' systems, '+fmt(m.rev)+'">'
+      +'<div class="cal-month-name">'+m.label+'</div>'
+      +'<div class="cal-month-bar"><div class="cal-month-fill" style="height:'+h+'px"></div></div>'
+      +'<div class="cal-month-rev">'+(m.rev>0?'$'+(m.rev/1000).toFixed(0)+'K':'-')+'</div>'
+      +'<div class="cal-month-cnt">'+(m.cnt>0?m.cnt+' sys':'')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// --- Risk Priority Matrix ---
+function renderRiskMatrix(){
+  var ctx=$('riskMatrixChart');
+  var card=$('riskMatrixCard');
+  if(!ctx||!card)return;
+  if(S.charts.riskMatrix){try{S.charts.riskMatrix.destroy();}catch(e){}}
+  if(!S.risks.length){card.style.display='none';return;}
+  card.style.display='block';
+  var pts=S.risks.map(function(r){return{x:r.prob,y:r.impact,label:r.cust,w:(r.prob/100)*r.impact};});
+  S.charts.riskMatrix=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:[{
+      label:'Risks',
+      data:pts,
+      backgroundColor:pts.map(function(d){
+        return d.x>=70?'rgba(248,81,73,0.85)':d.x>=40?'rgba(210,153,34,0.85)':'rgba(56,139,253,0.85)';
+      }),
+      pointRadius:pts.map(function(d){return Math.max(7,Math.min(20,Math.sqrt(d.w/3000)*5));}),
+      pointHoverRadius:14
+    }]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){
+          var d=pts[ctx.dataIndex];
+          return[d.label,'Prob: '+d.x+'% | Revenue: '+fmt(d.y),'Weighted: -'+fmt(d.w)];
+        }}}
+      },
+      scales:{
+        x:{title:{display:true,text:'Probability (%)',color:'#8b949e'},min:0,max:100,
+           ticks:{color:'#8b949e'},grid:{color:'rgba(127,127,127,.1)'}},
+        y:{title:{display:true,text:'Revenue at Risk (USD)',color:'#8b949e'},
+           ticks:{callback:function(v){return '$'+(v>=1000?(v/1000).toFixed(0)+'K':v);},color:'#8b949e'},
+           grid:{color:'rgba(127,127,127,.1)'}}
+      }
+    }
+  });
+}
+
+// --- Action Plan ---
+function addAction(){
+  var act=$('apAct').value.trim();
+  if(!act){alert('Action description is required.');return;}
+  pushHistory();
+  S.actions.push({id:Date.now(),acc:$('apAcc').value.trim(),act:act,
+    owner:$('apOwner').value.trim(),due:$('apDue').value,cat:$('apCat').value,status:'Pending'});
+  ['apAcc','apAct','apOwner','apDue'].forEach(function(id){$(id).value='';});
+  renderActions();autoSave();updateBadges(getFiltered());
+}
+function delAction(id){
+  pushHistory();
+  S.actions=S.actions.filter(function(a){return a.id!==id;});
+  renderActions();autoSave();updateBadges(getFiltered());
+}
+function updateActionStatus(id,status){
+  var a=S.actions.find(function(x){return x.id===id;});
+  if(a){a.status=status;renderActions();autoSave();}
+}
+function renderActions(){
+  setText('bdgActions',S.actions.length);
+  var body=$('actionBody');if(!body)return;
+  var today=new Date();today.setHours(0,0,0,0);
+  var pending=0,inProg=0,done=0,overdue=0;
+  S.actions.forEach(function(a){
+    var od=a.due&&a.status!=='Done'&&new Date(a.due)<today;
+    if(od)overdue++;
+    if(a.status==='Pending')pending++;
+    else if(a.status==='In Progress')inProg++;
+    else if(a.status==='Done')done++;
+  });
+  var summary='<div class="ap-summary">'
+    +'<div class="ap-stat">Pending: <strong>'+pending+'</strong></div>'
+    +'<div class="ap-stat">In Progress: <strong style="color:var(--blu)">'+inProg+'</strong></div>'
+    +'<div class="ap-stat">Done: <strong style="color:var(--grn)">'+done+'</strong></div>'
+    +(overdue?'<div class="ap-stat" style="border-color:rgba(248,81,73,.4)">Overdue: <strong style="color:var(--red)">'+overdue+'</strong></div>':'')
+    +'</div>';
+  if(!S.actions.length){body.innerHTML=summary+'<div class="reg-empty">No actions yet. Use the form above to track follow-up actions.</div>';return;}
+  var rows=S.actions.map(function(a){
+    var od=a.due&&a.status!=='Done'&&new Date(a.due)<today;
+    var dueTd='<td class="mu"'+(od?' style="color:var(--red)"':'')+'>'+esc(a.due||'-')+'</td>';
+    var catBadge='<span style="background:var(--sur2);border-radius:3px;padding:1px 5px;font-size:0.68rem;color:var(--mut)">'+esc(a.cat||'')+'</span>';
+    var sel='<select class="ap-status-sel" onchange="updateActionStatus('+a.id+',this.value)">'
+      +'<option'+(a.status==='Pending'?' selected':'')+'>Pending</option>'
+      +'<option'+(a.status==='In Progress'?' selected':'')+'>In Progress</option>'
+      +'<option'+(a.status==='Done'?' selected':'')+'>Done</option>'
+      +'</select>';
+    return '<tr'+(a.status==='Done'?' style="opacity:.5"':'')+'>'
+      +'<td>'+catBadge+'</td>'
+      +'<td><strong>'+esc(a.acc||'-')+'</strong></td>'
+      +'<td>'+esc(a.act)+'</td>'
+      +'<td class="mu">'+esc(a.owner||'-')+'</td>'
+      +dueTd+'<td>'+sel+'</td>'
+      +'<td><button class="bsm dng" onclick="delAction('+a.id+')">&#10005;</button></td>'
+      +'</tr>';
+  }).join('');
+  body.innerHTML=summary+'<table class="dt"><thead><tr>'
+    +'<th style="width:90px">Category</th><th>Account</th><th>Action</th>'
+    +'<th>Owner</th><th>Due Date</th><th>Status</th><th style="width:36px"></th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+// --- CSV Validation ---
+function validateCSV(data){
+  var required=['USD_annual_amount','Coverage_type','Platform','account_name'];
+  var recommended=['days_to_contract_renew','Country','Cluster','Serial_number','Direct_vs_bundle_revenue','end_date'];
+  if(!data||!data.length)return{ok:false,errors:['CSV has no data rows.'],warnings:[]};
+  var cols=Object.keys(data[0]);
+  var errors=required.filter(function(col){return cols.indexOf(col)<0;}).map(function(col){return'Missing required column: '+col;});
+  var warnings=recommended.filter(function(col){return cols.indexOf(col)<0;}).map(function(col){return'Missing: '+col+' (some features limited)';});
+  return{ok:errors.length===0,errors:errors,warnings:warnings};
+}
+function showCSVError(v){
+  var m=$('csvErrModal');if(!m)return;
+  var es=$('csvErrErrors'),ws=$('csvErrWarnings');
+  var esec=$('csvErrSection'),wsec=$('csvWarnSection');
+  if(es)es.innerHTML=v.errors.map(function(e){return'<li>'+esc(e)+'</li>';}).join('');
+  if(ws)ws.innerHTML=v.warnings.map(function(w){return'<li>'+esc(w)+'</li>';}).join('');
+  if(esec)esec.style.display=v.errors.length?'block':'none';
+  if(wsec)wsec.style.display=v.warnings.length?'block':'none';
+  m.classList.add('on');
+}
+function closeCSVError(){var m=$('csvErrModal');if(m)m.classList.remove('on');}
+
+// --- Keyboard Shortcuts Modal ---
+function showShortcuts(){var m=$('shortcutsModal');if(m)m.classList.add('on');}
+function closeShortcuts(){var m=$('shortcutsModal');if(m)m.classList.remove('on');}
 
 // ===== THEME =====
 function toggleTheme(){
@@ -2904,6 +3662,7 @@ updateRN();
 renderRisks();
 renderOpps();
 renderAssumps();
+renderActions();
 S.insightsDirty=false;
 </script>
 
@@ -2939,6 +3698,42 @@ S.insightsDirty=false;
 
 <!-- TOAST -->
 <div id="rptToast" class="toast"></div>
+
+<!-- CSV VALIDATION MODAL V2 -->
+<div class="v2-modal" id="csvErrModal">
+  <div class="v2-mbox">
+    <h3 style="color:var(--red)">&#9888; CSV Validation Issue</h3>
+    <div id="csvErrSection" style="display:none">
+      <strong style="font-size:0.82rem;color:var(--red)">Missing required columns (load blocked):</strong>
+      <ul class="v2-list err-list" id="csvErrErrors"></ul>
+    </div>
+    <div id="csvWarnSection" style="display:none">
+      <strong style="font-size:0.82rem;color:var(--org)">Missing recommended columns (partial functionality):</strong>
+      <ul class="v2-list warn-list" id="csvErrWarnings"></ul>
+    </div>
+    <div class="v2-macts">
+      <button class="bsm" onclick="closeCSVError()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<!-- KEYBOARD SHORTCUTS MODAL V2 -->
+<div class="v2-modal" id="shortcutsModal">
+  <div class="v2-mbox">
+    <h3>&#9000; Keyboard Shortcuts</h3>
+    <div class="sc-row"><span>Undo last change</span><span class="sc-key">Ctrl + Z</span></div>
+    <div class="sc-row"><span>Redo</span><span class="sc-key">Ctrl + Y</span></div>
+    <div class="sc-row"><span>Save session</span><span class="sc-key">Ctrl + S</span></div>
+    <div class="sc-row"><span>Generate report</span><span class="sc-key">Ctrl + P</span></div>
+    <div class="sc-row"><span>Export CSV</span><span class="sc-key">Ctrl + E</span></div>
+    <div class="sc-row"><span>Toggle dark/light</span><span class="sc-key">Ctrl + T</span></div>
+    <div class="sc-row"><span>Switch tabs (Systems/Risks/Opps/Assumptions/Actions/Insights)</span><span class="sc-key">Ctrl + 1&#8230;6</span></div>
+    <div class="sc-row"><span>Show this panel</span><span class="sc-key">?</span></div>
+    <div class="v2-macts">
+      <button class="bsm" onclick="closeShortcuts()">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- COMPARE PICKER MODAL -->
 <div id="cmpModal">
