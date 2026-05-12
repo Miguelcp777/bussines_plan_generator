@@ -514,6 +514,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .cmpm-meta{font-size:0.73rem;color:var(--mut);margin-top:2px}
 .cmpm-btn{background:#a78bfa;color:#fff;border:none;border-radius:var(--rs);padding:5px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
 .cmpm-btn:hover{background:#8b5cf6}
+label.cmpm-check{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--bdr);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;transition:all .15s;user-select:none}
+label.cmpm-check:hover{border-color:#a78bfa;background:rgba(167,139,250,.05)}
+label.cmpm-check.selected{border-color:#a78bfa;background:rgba(167,139,250,.08)}
+.cmpm-check input[type=checkbox]{width:15px;height:15px;accent-color:#a78bfa;flex-shrink:0;cursor:pointer;pointer-events:none}
+.cmpm-footer{padding:11px 20px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cmpm-count{color:var(--mut);font-size:0.8rem;flex:1}
+.cmpm-run{background:#a78bfa;color:#fff;border:none;border-radius:var(--rs);padding:7px 18px;font-size:0.83rem;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap}
+.cmpm-run:disabled{opacity:.35;cursor:not-allowed}
+.cmpm-run:not(:disabled):hover{background:#8b5cf6}
 .cmpm-btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* ===== UNDO / REDO ===== */
@@ -725,7 +734,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <!-- COMPARISON BAR -->
   <div id="cmpBar">
     <div class="cmp-hdr">
-      <span class="cmp-title">⇄ Comparing: <strong id="cmpCurrName">Current</strong> &nbsp;vs&nbsp; <strong id="cmpOtherName">—</strong></span>
+      <span class="cmp-title" id="cmpTitleSpan">⇄ Comparing</span>
       <label class="cmp-target-lbl">Contract Rate Target: <input type="number" id="cmpRateTarget" value="80" min="0" max="100" step="1">%</label>
       <button class="cmp-cls" onclick="clearComparison()">✕ Clear comparison</button>
     </div>
@@ -3069,26 +3078,29 @@ function loadCompareList(){
   $('cmpList').innerHTML='<div style="color:var(--mut);padding:32px;text-align:center">Loading…</div>';
   fetch('/api/reports').then(function(r){return r.json();}).then(function(rows){
     if(!rows.length){
-      $('cmpList').innerHTML='<div style="color:var(--mut);padding:36px;text-align:center">No saved reports yet.<br>Save a report first via 💾 Save Report.</div>';
-      return;
+      $('cmpList').innerHTML='<div style="color:var(--mut);padding:36px;text-align:center">No saved reports yet.<br>Save a report first.</div>';
+      _onCmpCheck();return;
     }
-    $('cmpList').innerHTML=rows.map(function(r){
-      var sm; try{sm=JSON.parse(r.summary_json);}catch(e){sm={};}
+    var curRow=S.raw.length
+      ?'<label class="cmpm-check"><input type="checkbox" class="cmpm-chk" value="__current__" onchange="_onCmpCheck()">'
+        +'<div class="cmpm-info"><div class="cmpm-name">⧡ Current Session</div>'
+        +'<div class="cmpm-meta">'+_escH($('rnPrev').textContent)+' · active filters applied</div>'
+        +'</div></label>'
+      :'';
+    $('cmpList').innerHTML=curRow+rows.map(function(r){
+      var sm;try{sm=JSON.parse(r.summary_json);}catch(e){sm={};}
       var base=sm.base?'Base $'+(sm.base/1e6).toFixed(2)+'M':'';
       var net=sm.net?' · Net $'+(sm.net/1e6).toFixed(2)+'M':'';
-      return '<div class="cmpm-row">'
-        +'<div class="cmpm-info">'
-          +'<div class="cmpm-name">'+_escH(r.name)+'</div>'
-          +'<div class="cmpm-meta">'+_escH(r.plan_code||'')+(r.scope?' · '+_escH(r.scope):'')+' · '+_escH(r.created_at)+(base?' · '+base+net:'')+' </div>'
-        +'</div>'
-        +'<button class="cmpm-btn" onclick="selectForCompare('+r.id+',this)">Compare</button>'
-        +'</div>';
+      return '<label class="cmpm-check"><input type="checkbox" class="cmpm-chk" value="'+r.id+'" onchange="_onCmpCheck()">'
+        +'<div class="cmpm-info"><div class="cmpm-name">'+_escH(r.name)+'</div>'
+        +'<div class="cmpm-meta">'+_escH(r.plan_code||'')+(r.scope?' · '+_escH(r.scope):'')+' · '+_escH(r.created_at)+(base?' · '+base+net:'')+' </div>'
+        +'</div></label>';
     }).join('');
+    _onCmpCheck();
   }).catch(function(){
     $('cmpList').innerHTML='<div style="color:var(--red);padding:32px;text-align:center">Failed to load reports.</div>';
   });
 }
-
 function computeSummaryFrom(st){
   var rows=[];
   var churn=new Set(st.churn||[]);
@@ -3142,18 +3154,47 @@ function computeSummaryFrom(st){
   return{base:base,retRev:retRev,chnRev:chnRev,diffRev:diffRev,riskW:riskW,oppUp:oppUp,net:retRev-riskW+oppUp,platforms:platforms};
 }
 
-function selectForCompare(id, btn){
-  btn.textContent='…'; btn.disabled=true;
-  fetch('/api/reports/'+id).then(function(r){return r.json();}).then(function(d){
-    var st; try{st=JSON.parse(d.state_json);}catch(e){showToast('Invalid saved state',true);return;}
-    var other=computeSummaryFrom(st);
-    closeCompareModal();
-    renderComparison(other, d.name);
-  }).catch(function(){
-    showToast('Failed to load report',true);
-  }).finally(function(){btn.textContent='Compare';btn.disabled=false;});
+function _onCmpCheck(){
+  var n=document.querySelectorAll('#cmpList .cmpm-chk:checked').length;
+  var btn=$('cmpRunBtn'),lbl=$('cmpSelCount');
+  if(btn){btn.disabled=n<2;btn.textContent=n>=2?'Compare '+n+' Reports':'Select 2+ to Compare';}
+  if(lbl){lbl.textContent=n>0?n+' selected':'';}
+  document.querySelectorAll('#cmpList label.cmpm-check').forEach(function(row){
+    var cb=row.querySelector('input');
+    if(cb)row.classList.toggle('selected',cb.checked);
+  });
 }
 
+function runMultiCompare(){
+  var checks=document.querySelectorAll('#cmpList .cmpm-chk:checked');
+  var ids=[],includeCurrent=false;
+  checks.forEach(function(cb){
+    if(cb.value==='__current__')includeCurrent=true;
+    else ids.push(parseInt(cb.value));
+  });
+  if(ids.length+(includeCurrent?1:0)<2){alert('Select at least 2 reports to compare.');return;}
+  var btn=$('cmpRunBtn');
+  btn.disabled=true;btn.textContent='Loading…';
+  Promise.all(ids.map(function(id){
+    return fetch('/api/reports/'+id).then(function(r){return r.json();}).then(function(d){
+      var st;try{st=JSON.parse(d.state_json);}catch(e){return null;}
+      if(!st)return null;
+      return{name:d.name,data:computeSummaryFrom(st)};
+    });
+  })).then(function(results){
+    var reports=results.filter(Boolean);
+    if(includeCurrent){
+      var cd=calcSummary(getFiltered());
+      cd.platforms=_curPlatformData();
+      reports.unshift({name:$('rnPrev').textContent+' (current)',data:cd});
+    }
+    if(reports.length<2){showToast('Could not load selected reports',true);return;}
+    closeCompareModal();
+    renderMultiComparison(reports);
+  }).catch(function(){
+    showToast('Failed to load reports',true);
+  }).finally(function(){btn.disabled=false;btn.textContent='Compare Reports';});
+}
 function _fmtM(v){
   var abs=Math.abs(v);
   if(abs>=1e6) return '$'+(v/1e6).toFixed(2)+'M';
@@ -3807,11 +3848,16 @@ S.insightsDirty=false;
 <div id="cmpModal">
   <div class="cmpm-box">
     <div class="cmpm-hdr">
-      <h3>⇄ Select report to compare against</h3>
+      <h3>⇄ Compare Reports</h3>
       <button class="btn-cls" onclick="closeCompareModal()">✕</button>
     </div>
     <div class="cmpm-body">
+      <div style="font-size:0.78rem;color:var(--mut);margin-bottom:10px;line-height:1.5">Select <strong style="color:var(--txt)">2 or more</strong> reports to compare side by side. Include <em>Current Session</em> to compare against your active view.</div>
       <div id="cmpList"></div>
+    </div>
+    <div class="cmpm-footer">
+      <span class="cmpm-count" id="cmpSelCount"></span>
+      <button class="cmpm-run" id="cmpRunBtn" onclick="runMultiCompare()" disabled>Select 2+ to Compare</button>
     </div>
   </div>
 </div>
