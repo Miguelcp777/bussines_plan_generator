@@ -23,3 +23,10 @@ Thumbs.db
 # Patch scripts (dev utilities, not needed in repo)
 _patch_*.py
 _fix*.py
+
+# Claude Code local state
+# settings.json queda fuera a propósito: guarda comandos aprobados que llevan
+# dentro una clave service_role y una contraseña en claro. Es lo único de esta
+# carpeta que no tiene arreglo discreto si acaba en el historial.
+.claude/settings.json
+.claude/worktrees/
