@@ -1815,7 +1815,10 @@ const APP_VERSION = '2026.09.1';
    ============================================================ */
 const DEFAULT_USERS = [
   { email:'NPohardy@ITS.JNJ.com', name:'Nicolas Pohardy',   role:'director', clusters:'*',
-    title:'Director Technical Service EMEA' },
+    title:'Director Technical Service EMEA',
+    /* Francia y Benelux no son de ningún manager de la lista, así que los lleva él. No es
+       lo mismo que su '*': eso es lo que ve. Esto es lo que responde. */
+    plans:['France','Benelux'] },
 
   { email:'SYanikog@ITS.JNJ.com', name:'Serdar Yanikoglu',  role:'manager',  label:'CEEMA',
     title:'Field Service Manager, CEEMA & UK/IE',
@@ -2706,10 +2709,22 @@ function scopeReclass(sc){
    clusterOf() devuelve 'Other' para un país que no está en el mapa y 'Unassigned' si
    viene vacío. Esas filas no son de ningún manager y desaparecerían de la suma de
    alcances sin que nadie lo note. */
+/* Los clusters que alguien planifica sin que sean su alcance. Para quien lo ve todo, su
+   alcance no dice nada de quién responde por cada país; esto sí. */
+function plansScope(u){
+  if (!u || !u.plans || !u.plans.length) return null;
+  const map = S.st.clusters || DEFAULT_CLUSTERS;
+  const out = new Set();
+  u.plans.forEach(c => (map[c] || []).forEach(cc => out.add(String(cc).toUpperCase())));
+  return out.size ? out : null;
+}
+/* Quién planifica de verdad cada país: su alcance, o lo que lleve por encargo. */
+function planningScope(u){ return userScope(u) || plansScope(u); }
+
 function scopeAudit(){
   const map = S.st.clusters || DEFAULT_CLUSTERS;
   const owned = new Set();
-  users().forEach(u => { const sc = userScope(u); if (sc) sc.forEach(c => owned.add(c)); });
+  users().forEach(u => { const sc = planningScope(u); if (sc) sc.forEach(c => owned.add(c)); });
   const all = uniq(S.raw.map(r => String(r[S.map.country] ?? '').trim().toUpperCase())).filter(Boolean);
   const orphan = all.filter(c => !owned.has(c));
   const rows = orphan.length
@@ -3602,12 +3617,20 @@ function renderConsol(notes){
     const e = sub.length ? engine(sub, { risk:1, opp:1 }) : null;
     return { a, n:sub.length, exp:e ? e.expected : 0, base:e ? e.B : 0 };
   });
-  const totalExp = sum(rows.map(r => r.exp));
+  /* Lo que lleva el director en mano no llega como entrega — no se manda un archivo a sí
+     mismo—, pero cuenta igual en el total de EMEA. */
+  const dir = users().find(u => seesAll(u) && plansScope(u));
+  const dirCtry = dir ? [...plansScope(dir)] : [];
+  const dirRows = dirCtry.length ? S.rows.filter(r => dirCtry.includes(r.country)) : [];
+  const dirExp = dirRows.length ? engine(dirRows, { risk:1, opp:1 }).expected : 0;
+
+  const totalExp = sum(rows.map(r => r.exp)) + dirExp;
 
   setHTML('consolKpis', [
     kpi('b','Clusters in', `${got.size}${expected.length ? ' / ' + expected.length : ''}`,
         expected.length ? `${expected.filter(x=>!got.has(x)).length} still to come` : 'no user table set', 'records'),
-    kpi('g','Consolidated expected', money(totalExp), `${sum(rows.map(r=>r.n)).toLocaleString()} systems`, 'expRev'),
+    kpi('g','Consolidated expected', money(totalExp),
+        `${(sum(rows.map(r=>r.n)) + dirRows.length).toLocaleString()} systems`, 'expRev'),
     kpi('k','Records in file', S.rows.length.toLocaleString(), `${S.fleet||S.rows.length} in the source`, 'records')
   ].join(''));
 
@@ -3623,11 +3646,19 @@ function renderConsol(notes){
         <td class="r"><b>${money(r.exp)}</b></td>
         <td class="r"><button class="btn sm" onclick="dropCluster('${esc(r.a.cluster)}')" title="Remove this submission">✕</button></td>
       </tr>`).join('') : `<tr><td colspan="8" class="empty">Nothing absorbed yet</td></tr>`)
+    + (dirRows.length ? `<tr>
+        <td><b>${esc((dir.plans||[]).join(', '))}</b><span class="tsub">${esc(dirCtry.join(', '))}</span></td>
+        <td>${esc(dir.name)}</td><td class="c">—</td>
+        <td colspan="2" class="c-m">planned directly — no submission</td>
+        <td class="c">${dirRows.length.toLocaleString()}</td>
+        <td class="r"><b>${money(dirExp)}</b></td><td></td>
+      </tr>` : '')
     + expected.filter(x => !got.has(x)).map(x => `<tr class="dim">
         <td><b>${esc(x)}</b></td><td colspan="5" class="c-m">not submitted</td>
         <td class="r c-m">—</td><td></td></tr>`).join('')
-    + `</tbody><tfoot><tr><td colspan="5">EMEA · ${got.size} of ${expected.length || got.size} clusters</td>
-        <td class="c">${sum(rows.map(r=>r.n)).toLocaleString()}</td>
+    + `</tbody><tfoot><tr><td colspan="5">EMEA · ${got.size} of ${expected.length || got.size} clusters${
+        dirRows.length ? ', plus what the director plans directly' : ''}</td>
+        <td class="c">${(sum(rows.map(r=>r.n)) + dirRows.length).toLocaleString()}</td>
         <td class="r">${money(totalExp)}</td><td></td></tr></tfoot>`;
 
   const rest = rows.map(r => ({ cl:r.a.cluster, st:restateCluster(r.a) })).filter(x => x.st);
