@@ -1,0 +1,31 @@
+{
+  "modules": [
+    {
+      "name": "bp-builder",
+      "paths": [
+        "business_plan_tool.html"
+      ],
+      "spec": ".specanchor/modules/bp-builder.spec.md"
+    },
+    {
+      "name": "variantes-y-legado",
+      "paths": [
+        "business_plan_tool_supabase.html",
+        "business_plan_tool_v2.html",
+        "business_plan_tool_BACKUP.html",
+        "CLAUDE_supabase.md",
+        "app.py",
+        "requirements.txt",
+        "build_exe.spec",
+        "_chk.js",
+        "_inject_csv.py",
+        "_inject_excel.py",
+        "_inject_multicompare.py"
+      ],
+      "spec": ".specanchor/modules/variantes-y-legado.spec.md"
+    }
+  ],
+  "global_spec_paths": [
+    ".specanchor/global/*.spec.md"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "revision": "34966d3136b4e686c1d41225eebcc24cb1a3535c",
+  "material_files": [
+    "CLAUDE_supabase.md",
+    "_chk.js",
+    "_inject_csv.py",
+    "_inject_excel.py",
+    "_inject_multicompare.py",
+    "app.py",
+    "build_exe.spec",
+    "business_plan_tool.html",
+    "business_plan_tool_BACKUP.html",
+    "business_plan_tool_supabase.html",
+    "business_plan_tool_v2.html",
+    "requirements.txt"
+  ],
+  "unmapped": [],
+  "functional_validation": "NOT_RUN"
+}

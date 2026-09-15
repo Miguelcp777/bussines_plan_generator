@@ -1,0 +1,115 @@
+{
+  "revision": "34966d3136b4e686c1d41225eebcc24cb1a3535c",
+  "task_spec": ".specanchor/tasks/TASK-001.spec.md",
+  "files": [
+    {
+      "path": ".specanchor/global/arquitectura.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/producto.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/alcance-y-usuarios.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/entrega-y-consolidacion.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/datos-y-persistencia.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/calidad-y-seguridad.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/modules/bp-builder.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/modules/variantes-y-legado.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Anclaje inicial (TASK-001). Contrato nuevo que describe comportamiento ya existente; no introduce comportamiento. Marcado OBSERVED/VERIFIED/UNKNOWN por afirmacion, con fuente y revision.",
+      "evidence": [
+        ".specanchor/tasks/TASK-001.spec.md"
+      ]
+    }
+  ],
+  "traceability": [
+    {
+      "requirement": "TASK-001/REQ-001",
+      "acceptance": "TASK-001/AC-001",
+      "verification": "md5 + wc -lc + node --check sobre el <script>, antes y despues del bootstrap",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-001.spec.md"
+    },
+    {
+      "requirement": "TASK-001/REQ-002",
+      "acceptance": "TASK-001/AC-002",
+      "verification": "check-spec-sync.py --baseline",
+      "result": "pass",
+      "evidence": ".specanchor/evidence/baseline.json"
+    },
+    {
+      "requirement": "TASK-001/REQ-003",
+      "acceptance": "TASK-001/AC-003",
+      "verification": "revision de las nueve specs: tabla de evidencia por afirmacion",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-001.spec.md"
+    },
+    {
+      "requirement": "TASK-001/REQ-004",
+      "acceptance": "TASK-001/AC-004",
+      "verification": "inspeccion de CLAUDE.md y AGENTS.md",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-001.spec.md"
+    },
+    {
+      "requirement": "TASK-001/REQ-005",
+      "acceptance": "TASK-001/AC-005",
+      "verification": "docs/decisiones/0001 y 0002 existen",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-001.spec.md"
+    }
+  ]
+}

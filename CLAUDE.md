@@ -1,5 +1,28 @@
 # JJV Business Plan Tool — Claude Code Instructions
 
+> ## ⚠ Lee esto antes que nada
+>
+> **Este proyecto trabaja con desarrollo dirigido por especificación.** Para
+> cualquier cambio material se aplica el protocolo de `.specanchor/README.md`:
+> tarea antes de tocar código, contratos actualizados antes o a la vez, y
+> cobertura documental informada **por separado** de la alineación funcional.
+> Los contratos están en `.specanchor/global/`; el mapa del archivo, en
+> `.specanchor/codemap.md`; las decisiones, en `docs/decisiones/`.
+>
+> **Buena parte de lo que sigue describe otra aplicación.** Las secciones de
+> Supabase, Auth gate, Report Persistence (DB) y Deploy describen
+> `business_plan_tool_supabase.html`, una variante **parada**. La aplicación
+> viva, `business_plan_tool.html`, **no tiene Supabase, ni autenticación, ni
+> servidor**: comprobado, cero menciones de Supabase y un solo bloque
+> `<script>`, no dos. Ver `.specanchor/findings/0001-claude-md-describe-otra-aplicacion.md`.
+>
+> Lo que sí vale para la aplicación viva: el objeto `S`, las pestañas, la lógica
+> de ingreso y —sobre todo— **Editing Guidelines**, que sigue siendo la forma
+> correcta de editar el archivo.
+>
+> Para lo demás, la fuente de verdad es `.specanchor/`.
+
+
 ## Overview
 Static single-file web app talking directly to **Supabase** (Postgres + Auth) via `supabase-js`.
 Served as a static `business_plan_tool.html` (nginx in prod). No Flask in the request path.
