@@ -400,11 +400,16 @@ table.dt tfoot td{padding:8px 10px;font-weight:700;border-top:2px solid var(--bd
 .whoami .wr{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .whoami .wr input{width:auto;min-width:215px}
 .whoami .wor{font-size:.74rem;color:var(--mut)}
+/* Lo que falta, señalado donde está, en vez de un aviso que se va solo. */
+.whoami.wneed{border-color:var(--o);box-shadow:0 0 0 3px color-mix(in srgb, var(--o) 22%, transparent)}
 /* La misma identidad, en la barra de arriba, para que nunca haya duda de "como quién". */
 .top-who{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--navtx);white-space:nowrap;
   border-left:1px solid rgba(255,255,255,.15);padding-left:11px;margin-left:2px}
 .top-who b{color:#fff;font-weight:600}
 .top-who .sc{background:rgba(255,255,255,.12);border-radius:9px;padding:1px 7px;font-size:.72rem;color:#fff}
+.top-out{background:transparent;border:1px solid rgba(255,255,255,.28);color:var(--navtx);cursor:pointer;
+  border-radius:var(--r2);padding:3px 10px;font:inherit;font-size:.74rem;margin-left:9px;white-space:nowrap}
+.top-out:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.5)}
 .navf .ver{display:block;font-size:.68rem;color:var(--mut);margin-top:3px;opacity:.8}
 .su-h .mk{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#7a0a1e);
      display:grid;place-items:center;margin:0 auto 13px;font-size:1.4rem;color:#fff;box-shadow:var(--shd2)}
@@ -848,7 +853,9 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
       <svg class="jj" viewBox="0 0 1205.4 512.41" role="img" aria-label="Johnson &amp; Johnson"><use href="#jj"/></svg>
       <span class="div"></span>
       <span>BP Builder</span><span class="sub">Service Contracts</span>
-      <span class="top-who" id="topWho" hidden></span></div>
+      <span class="top-who" id="topWho" hidden></span>
+      <button class="top-out" id="btnSignOut" hidden onclick="signOut()"
+        title="Sign out and go back to the start screen">Sign out</button></div>
     <div class="tf">
       <label>Cycle</label>
       <select id="cyType" onchange="onCycle()">
@@ -1573,6 +1580,7 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
               <label for="setWhoSel">Identity</label>
               <select class="inp" id="setWhoSel" onchange="setUser(this.value)"></select>
               <span class="hint" id="setWhoHint"></span>
+              <button class="btn sm" style="margin-top:9px;width:max-content" onclick="signOut()">↩ Sign out</button>
             </div>
             <div class="fld">
               <label>Coverage of the user table</label>
@@ -2396,14 +2404,38 @@ function updateSetup(){
          : 'optional — without it the plan sees directly-paid contracts only'));
   if (rc){ setHTML('rcMsg', reclassSummaryHTML()); setHTML('rcMsg2', reclassSummaryHTML()); }
   const btn = $('btnContinue');
+  const needWho = users().length && !currentUser();
   btn.disabled = !hasIB;
-  btn.textContent = hasIB
-    ? (rc ? 'Continue to the plan →' : 'Continue without bundle revenue →')
-    : 'Load the installed base first';
+  btn.textContent = !hasIB ? 'Load the installed base first'
+    : needWho            ? 'Pick who you are to continue'
+    : rc                 ? 'Continue to the plan →'
+                         : 'Continue without bundle revenue →';
+}
+
+function signOut(){
+  const u = currentUser();
+  if (!confirm(`Sign out${u ? ' as ' + u.name : ''}?\n\n`
+      + `Your work stays saved in this browser and comes back when you sign in again. `
+      + `To remove it from this machine, use Discard on the start screen.`)) return;
+  autoSave();                       // lo de esta sesión, guardado antes de salir
+  setUser('');                      // limpia la identidad y reconstruye sin alcance
+  $('app').classList.remove('on');
+  $('setup').style.display = '';
+  setHTML('loadMsg', '');
+  updateSetup();
+  renderWhoami();
+  window.scrollTo(0, 0);
+  toast(u ? `Signed out — ${u.name}` : 'Signed out');
 }
 
 function continueToPlan(){
   if (!S.rows.length) return toast('Load the installed base first', true);
+  if (users().length && !currentUser()){
+    const w = $('whoBox');
+    if (w){ w.scrollIntoView({ behavior:'smooth', block:'center' }); w.classList.add('wneed');
+            setTimeout(()=>w.classList.remove('wneed'), 2200); }
+    return toast('Pick who you are first — the plan is scoped to your countries', true);
+  }
   startApp();
 }
 
@@ -3558,6 +3590,9 @@ function renderWhoami(){
     t.hidden = !u;
     if (u) setHTML('topWho', `<b>${esc(u.name)}</b><span class="sc">${esc(scopeLabel(u))}</span>`);
   }
+  const so = $('btnSignOut');
+  if (so) so.hidden = !u;
+  if ($('btnContinue') && !$('app').classList.contains('on')) updateSetup();
   const sb = $('btnSubmit');
   if (sb) sb.hidden = !u || seesAll(u) || !!S.consol;
   /* La consolidación solo la ve quien la puede hacer. Es una comodidad —quien quiera
@@ -7087,6 +7122,17 @@ async function restoreSession(){
       S.file = src.file || S.file; S.sheets = src.sheets || S.sheets;
       if (src.reclass && !S.reclass) S.reclass = src.reclass;
       buildRecords(); buildFilters(); clearFilters(); buildSettingsUI(); renderNavSource();
+      if (users().length && !currentUser()){
+        /* Los datos vuelven, pero el plan no se abre hasta que alguien diga quién es. */
+        updateSetup(); renderWhoami();
+        const w = $('whoBox'); if (w) w.scrollIntoView({ behavior:'smooth', block:'center' });
+        setHTML('loadMsg', `<div class="note i"><span class="ni2">◎</span><div>
+          <b>${esc(S.file || 'Your data')}</b> is back —
+          ${S.raw.length.toLocaleString()} records, with your decisions and registers.
+          Say who you are to open the plan.</div></div>`);
+        toast('Welcome back — pick who you are to carry on');
+        return;
+      }
       startApp();
       toast('Welcome back — picked up where you left off');
       return;
