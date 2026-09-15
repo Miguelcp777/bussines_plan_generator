@@ -1,258 +1,249 @@
-# JJV Business Plan Tool — Claude Code Instructions
+# JJV Business Plan Tool — instrucciones de proyecto
 
-> ## ⚠ Lee esto antes que nada
+> **Antes de nada: este proyecto trabaja con desarrollo dirigido por
+> especificación.** Para cualquier cambio material se aplica el protocolo de
+> `.specanchor/README.md` — tarea antes de tocar código, contratos actualizados
+> antes o a la vez, y cobertura documental informada **por separado** de la
+> alineación funcional. Los contratos están en `.specanchor/global/`; las
+> decisiones, en `docs/decisiones/`.
 >
-> **Este proyecto trabaja con desarrollo dirigido por especificación.** Para
-> cualquier cambio material se aplica el protocolo de `.specanchor/README.md`:
-> tarea antes de tocar código, contratos actualizados antes o a la vez, y
-> cobertura documental informada **por separado** de la alineación funcional.
-> Los contratos están en `.specanchor/global/`; el mapa del archivo, en
-> `.specanchor/codemap.md`; las decisiones, en `docs/decisiones/`.
->
-> **Buena parte de lo que sigue describe otra aplicación.** Las secciones de
-> Supabase, Auth gate, Report Persistence (DB) y Deploy describen
-> `business_plan_tool_supabase.html`, una variante **parada**. La aplicación
-> viva, `business_plan_tool.html`, **no tiene Supabase, ni autenticación, ni
-> servidor**: comprobado, cero menciones de Supabase y un solo bloque
-> `<script>`, no dos. Ver `.specanchor/findings/0001-claude-md-describe-otra-aplicacion.md`.
->
-> Lo que sí vale para la aplicación viva: el objeto `S`, las pestañas, la lógica
-> de ingreso y —sobre todo— **Editing Guidelines**, que sigue siendo la forma
-> correcta de editar el archivo.
->
-> Para lo demás, la fuente de verdad es `.specanchor/`.
-
-
-## Overview
-Static single-file web app talking directly to **Supabase** (Postgres + Auth) via `supabase-js`.
-Served as a static `business_plan_tool.html` (nginx in prod). No Flask in the request path.
-Dependencies loaded from CDN:
-- **PapaParse 5.4.1** — CSV parsing
-- **Chart.js 4.4.1** — charts
-- **xlsx 0.18.5** — Excel export
-- **@supabase/supabase-js@2** — auth + database
-
-All UI state lives in memory + `localStorage`. Saved reports persist in Supabase Postgres (`public.reports`), scoped per user by RLS.
-
-> Legacy: `app.py` (Flask + SQLite `reports.db`) is retained only for local dev. Production no longer uses it; the old `/api/reports` REST endpoints are replaced by direct Supabase queries.
+> `AGENTS.md` dice lo mismo en corto, para Codex.
 
 ---
 
-## File Location
-`business_plan_tool.html` — the whole app (HTML+CSS+JS in two inline `<script>` blocks). Served statically at `/`.
+## Qué es
 
-## Supabase Architecture
-- **Config:** `SUPABASE_URL` + `SUPABASE_ANON_KEY` constants at the top of the main `<script>` (~line 1172). Anon key is safe to expose; security is enforced by RLS. **Never** put the `service_role` key in the HTML.
-- **Client:** `const sb = window.supabase.createClient(...)`; `let CURRENT_USER` holds the logged-in user.
-- **Table `public.reports`:** `id, user_id (uuid, default auth.uid()), name, created_at (timestamptz), plan_code, scope, state_json (text), summary_json (text)`.
-- **RLS:** select/insert/delete policies all require `auth.uid() = user_id` → each user sees only their own reports.
-- **Auth:** email/password. Public sign-up disabled; admin creates users in Supabase Studio.
-- **Deploy:** nginx serves the HTML; Supabase self-hosted on a Proxmox VM; HTTPS via Let's Encrypt; access via DDNS + port-forward 443.
+Previsión **de abajo arriba** del ingreso de mantenimiento a partir de la
+installed base de J&J Vision: línea base, riesgo, oportunidad y escenarios,
+equipo por equipo, para el ciclo de negocio de un año (BP, JU o NU).
 
-## Data helpers (replace the old fetch/REST layer)
-| Helper | Supabase call |
-|---|---|
-| `dbListReports()` | `sb.from('reports').select('id,name,created_at,plan_code,scope,summary_json').order('created_at',{ascending:false})` |
-| `dbSaveReport(body)` | `sb.from('reports').insert({...}).select('id').single()` |
-| `dbGetReport(id)` | `sb.from('reports').select('*').eq('id',id).single()` |
-| `dbDeleteReport(id)` | `sb.from('reports').delete().eq('id',id)` |
-| `dbListComparisons()` | `sb.from('plan_comparisons').select('id,name,year,report_ids,created_at').order(...)` |
-| `dbSaveComparison(body)` | `sb.from('plan_comparisons').insert({...}).select('id').single()` |
-| `dbGetComparison(id)` | `sb.from('plan_comparisons').select('*').eq('id',id).single()` |
-| `dbUpdateComparison(id,body)` | `sb.from('plan_comparisons').update({name,notes_json}).eq('id',id)` |
-| `dbDeleteComparison(id)` | `sb.from('plan_comparisons').delete().eq('id',id)` |
+La usan **siete personas**: un director de servicio de EMEA y seis managers de
+cluster. Cada uno trabaja sus países y entrega su plan; el director los junta.
 
-## Auth gate
-- `#authGate` overlay (after `<body>`) covers the app until login. `.app` starts `display:none`.
-- `showApp()` / `showAuthGate()` toggle visibility; `login(ev)` → `sb.auth.signInWithPassword`; `logout()` → `sb.auth.signOut()` + reload.
-- Bootstrap IIFE at the end of the main script calls `sb.auth.getSession()` and registers `onAuthStateChange`.
-- Replaces the old `IS_FLASK` guard: feature guards now check `if(!CURRENT_USER){...}`.
+**Un solo archivo**: `business_plan_tool.html`, 8.420 líneas, con el HTML, el
+CSS y todo el JavaScript en **un único bloque `<script>` en línea**. Sin build,
+sin empaquetador, sin servidor, sin base de datos, **sin autenticación**. Se
+abre en un navegador y funciona.
 
-## Report Persistence (DB)
-- `state_json` = same format as `getStateJson()` (v:2 schema; full CSV text included)
-- `summary_json` = `{base, net, churn, systems, churnCount}` for list display (stored as TEXT, `JSON.parse`d in JS)
-- `LS_KEY` is namespaced per user (`jjv_bp_session_<user_id>`) so accounts on a shared PC don't cross autosaves.
+Tres dependencias, de cdnjs y con versión exacta:
 
-## Plan Comparison (BP / JU / NU)
-Dedicated view to compare the three yearly revisions of the forecast by platform — replaces the manual Excel workflow.
-- **Entry:** `📊 Plan Compare` toolbar button → `openPlanCmpModal()` builder (assign a saved report to BP/JU/NU slots; ≥2 required).
-- **Table `public.plan_comparisons`:** `id, user_id (default auth.uid()), name, year, report_ids (TEXT JSON: `[{label,id}]`), notes_json (TEXT JSON), created_at`. RLS select/insert/**update**/delete all require `auth.uid() = user_id`.
-- **`computePlanBreakdown(st)`** (sibling of `computeSummaryFrom`): returns `{platformType:{[plat]:{Direct,Bundle}}, bySerial:{[Serial_number]:{rev,platform,bucket,account}}, totals:{Direct,Bundle,grand}, noSerialCount}`. Value per cell = **retained, in-scope** revenue (excludes churn + `isHX`). Bucket from `Direct_vs_bundle_revenue`: Direct→**Contract**, Bundle→**Reclass**.
-- **`diffRevisions(brkA,brkB)`** matches contracts across revisions by `Serial_number` → `{appeared, disappeared, changed}` (the "discrepancy drivers"). Rows without a serial are summed into platform totals but excluded from matching (surfaced via `noSerialCount`).
-- **Overlay `#planCmpOvl`:** two blocks (Contract/Reclass) × platform rows × revision columns + chained variance columns (BP→JU, JU→NU) + per-platform editable Comments; grand TOTAL = latest revision's Direct+Bundle; discrepancy-driver lists with editable per-contract notes (pre-filled like `+20k Oftalmplus`); free-text notes box.
-- **Comments persistence:** three levels stored in `notes_json` = `{platformComments:{'Contract|Plat':...}, serialNotes:{'BP→JU|SN':...}, freeText}`, collected from the DOM via `_pcCollectNotes()` on save. Save = insert (or update when `_planCmp.editingId` set).
-- **Export:** `exportPlanCompareXlsx()` reuses the global `XLSX` (SheetJS) → sheets Contract, Reclass, Drivers, Notes.
+| Librería | Versión | Para qué |
+|---|---|---|
+| xlsx (SheetJS) | 0.18.5 | leer `.xls/.xlsx/.xlsb` |
+| PapaParse | 5.4.1 | leer CSV |
+| Chart.js | 4.4.1 | los gráficos |
+
+> **No hay Supabase, ni Flask, ni API.** Eso es
+> `business_plan_tool_supabase.html` y `app.py`, que están parados. Ver
+> `CLAUDE_supabase.md` y `.specanchor/modules/variantes-y-legado.spec.md`.
 
 ---
 
-## Data Flow
-1. User uploads a CSV exported from Alteryx via `<input type="file">`
-2. PapaParse parses with **ISO-8859-1** encoding
-3. Each row is enriched on load:
-   - `_id` — row index (string key)
-   - `_rev` — revenue as float
-   - `_days` — days to contract expiry (negative = expired)
-   - `_cluster` — cluster label
-4. Enriched rows stored in `S.raw` → all rendering derives from this
+## Lo que más caro sale suponer
+
+1. **El alcance por usuario NO es un control de acceso.** El archivo lleva la
+   installed base de toda EMEA dentro y se ejecuta en el navegador de quien lo
+   abre: cualquiera puede elegirse otro nombre y ver otro cluster. Está decidido
+   así a sabiendas (`docs/decisiones/0001`) y **no debe describirse como acceso
+   restringido ante nadie que dependa de esa afirmación**.
+2. **No hay pruebas automatizadas.** Ni suite, ni `package.json`, ni CI. Lo
+   único automatizado es `node --check`.
+3. **Nada de lo cambiado en septiembre de 2026 se ha ejecutado contra la
+   installed base real.** Al hablar de ello, conviene decirlo así.
+4. **Ningún secreto en este repositorio.** El archivo se reparte por correo: lo
+   que esté dentro es público.
 
 ---
 
-## State Object `S`
+## Entrada de datos
+
+Dos archivos, y cualquiera puede llegar primero:
+
+| Archivo | Qué aporta | Función |
+|---|---|---|
+| **Installed base** | los equipos y sus contratos directos | `loadFile()` → `ingestMatrix()` |
+| **Service Reclass** | la mitad *bundle* del ingreso, unida por número de serie | `ingestReclass()` |
+
+Formatos: `.xls`, `.xlsx`, `.xlsb` y `.csv`. El CSV se lee como **ISO-8859-1**
+(`readAsText(file,'ISO-8859-1')`), que es como exporta el origen.
+
+Las columnas **no son fijas**: `autoMap(hdr)` las reconoce por alias y `S.map`
+guarda campo → índice de columna. `FIELDS` tiene los 24 campos y sus alias; los
+obligatorios son cuenta, país y número de serie.
+
+**La unidad de análisis es cliente–equipo–contrato**, no el equipo ni el
+contrato.
+
+---
+
+## El objeto `S`
+
 ```js
-S = {
-  raw: [],          // all enriched CSV rows
-  cRev: {},         // manual revenue overrides {_id: value}
-  churn: Set,       // Set of _ids marked as churned
-  risks: [],        // [{id, cust, desc, prob, impact}]
-  opps: [],         // [{id, cust, type, qtr, revenue}]
-  assumps: [],      // [{id, cat, txt}]
-  filt: { countries: Set, clusters: Set, platforms: Set, coverage: Set },
-  sort: { col, dir },
-  page: 0, ps: 25,
-  charts: {},       // Chart.js instances (Systems tab)
-  iCharts: {},      // Chart.js instances (Insights/Report tab)
-  _csv: ''          // raw CSV text (for localStorage restore)
-}
+const S = {
+  rows: [],          // los registros ya construidos, YA RECORTADOS al alcance del usuario
+  raw:  [],          // la matriz del archivo, ENTERA y con sus índices
+  hdr: [], sheets: [], file: '', loadedAt: null,
+  map: {},           // campo -> índice de columna
+  dec: {},           // _key -> { st, prob, evMon, evYr, note, owner, touched }
+  risks: [], opps: [], tm: [], assums: [], versions: [], log: [],
+  eol: [],           // casos de fin de vida
+  filt: { cluster:Set, country:Set, platform:Set, coverage:Set, status:Set, stream:Set, q:'' },
+  sort: { col, dir }, page: 1, ps: 50,
+  charts: {}, fx: {}, cur: 'USD',
+  cy: { type:'BP', year:2026 },        // el ciclo
+  reclass: null,     // el Service Reclass, con bySerial
+  tog: { risk, opp, eol, tm },         // qué ajustes entran en la previsión
+  st: { ... }        // los ajustes de método: basis, expM, inclBundle, asp*, fxOver…
+};
 ```
+
+Y fuera de `S`, lo que no es del plan sino de la persona o de la máquina:
+
+| Constante | Valor | Qué guarda |
+|---|---|---|
+| `LS_KEY` | `scbp_session_v1` | el plan, en localStorage |
+| `LS_USER` | `scbp_user_v1` | quién eres |
+| `IDB_NAME`/`IDB_STORE` | `scbp` / `src` | los datos de origen, en IndexedDB |
+| `APP_VERSION` | `2026.09.1` | se estampa en el plan y en las entregas |
+
+**`S.rows` está recortada; `S.raw` no.** El recorte se aplica **una sola vez**,
+en `buildRecords()`. Cualquier pantalla nueva cuelga de `S.rows`. La única
+excepción es `aspFleet()`, y solo en agregado — ver
+`.specanchor/global/alcance-y-usuarios.spec.md`.
 
 ---
 
-## Key Helper Functions
+## Funciones que hay que conocer
 
-| Function | Purpose |
+| Función | Qué hace |
 |---|---|
-| `isTM(r)` | True if `Coverage_type` contains "T&M" — auto-churned on load |
-| `isHX(r)` | True if `_days < -356` — expired >1 year, excluded from base revenue |
-| `getRev(r)` | Returns `S.cRev[r._id]` override first, then `r._rev` |
-| `getFiltered()` | Applies `S.filt` filters to `S.raw`, returns filtered rows |
-| `calcSummary(rows)` | Returns `{base, retRev, chnRev, diffRev, riskW, oppUp, net, counts…}` |
-| `renderAll()` | Master re-render — calls all tab renderers + `autoSave()` |
-| `autoSave()` | Serializes full state to `localStorage` key `jjv_bp_session` |
-| `restoreSession()` | Reads localStorage, re-parses CSV text, restores all state |
-| `updateInsight(f, sm)` | Builds Systems tab insight strip + benchmark vs all-countries avg |
-| `buildEmailHTML()` | Generates full Outlook-compatible HTML email string (inline styles, no rgba) |
+| `buildRecords()` | Construye `S.rows` desde `S.raw`, **y aplica el recorte de alcance** |
+| `stableKey()` | La identidad de un registro: `serial\|contract\|coverage` + ordinal. **Nunca el número de fila** |
+| `attachBundle()` | Une el Service Reclass a los equipos por número de serie |
+| `applyFx()` | Tipos de cambio, con las anulaciones de `S.st.fxOver` |
+| `classify(r)` | Marca el registro: activo, vence, vencido, largo vencido |
+| `decOf(r)` | La decisión de un registro, o `{st:'renew', prob:100}` |
+| `rev()` / `revBundle()` / `revAll()` | Las tres corrientes: directa, bundle, y la suma |
+| `baseWindow(r)` | Los meses del año en que el registro aporta línea base |
+| `engine(records, scale)` | El motor: metodología §5 |
+| `scenarios(records)` | Base, esperado, pesimista, optimista |
+| `dashRows()` | La población del panel |
+| `recordLoss(r)` | La pérdida efectiva, siguiendo el enlace al registro de riesgos |
+| `currentUser()` / `userScope()` / `scopeLabel()` | Quién eres y qué te toca |
+| `absorb(blob)` | El director absorbe una entrega |
+| `saveJson()` / `planName()` | Guardar eligiendo carpeta, con nombre con ciclo y alcance |
 
 ---
 
-## Revenue Logic
-- **Base** = sum of in-scope retained contracts (`!isHX(r) && !S.churn.has(r._id)`)
-- **Churn** = sum of churned contracts (`S.churn`)
-- **Difficult** = sum of `isHX(r)` rows — excluded from base, shown separately
-- **T&M contracts** — `isTM(r)` → auto-added to churn on CSV load
-- **Net** = `retRev - riskW + oppUp`
+## Los catorce paneles
+
+`p-dash` · `p-base` · `p-risk` · `p-opp` · `p-tm` · `p-move` · `p-scen` ·
+`p-asp` · `p-ins` · `p-assum` · `p-dq` · `p-ver` · `p-consol` · `p-set`
+
+`renderAll()` es el re-render maestro: llama a `autoSave()`, a los renderizadores
+comunes y al del panel activo.
+
+Mapa completo, sección a sección: `.specanchor/codemap.md`.
 
 ---
 
-## Tab Structure
+## Lógica de ingreso
 
-| Tab | `data-tab` | Accent Color | Purpose |
-|---|---|---|---|
-| Systems | `systems` | Teal | Main table, KPI bar, charts, filters |
-| Risks | `risks` | Red | Risk register with prob/impact/weighted |
-| Opportunities | `opps` | Blue | Opportunity pipeline by account |
-| Insights | `insights` | Purple | Generated report (print / email) |
-| Assumptions | `assump` | Amber | Free-text assumptions by category |
+Tres corrientes, que no se mezclan:
 
-Tab accent colors are applied via `data-tab` CSS attribute selectors on `.tbtn`.
+- **Direct** — la factura el cliente, está en la installed base. `rev()`
+- **Bundle** — reclasificado internamente, solo lo trae el Service Reclass,
+  se une por número de serie. `revBundle()`, y solo si `S.st.inclBundle`
+- **T&M** — a mano, no sale de ningún archivo
 
----
+**La línea base es proporcional al tiempo**: `valor × meses activos ÷ 12`.
 
-## Report (Insights Tab)
-Rendered into `#rptOvl` overlay. Sections:
-1. Cover page (`.rcov`)
-2. Revenue Analysis — Direct/Bundle allocation tables by Platform + avg benchmark tables
-3. Coverage & Type charts
-4. Expiry timeline
-5. Top accounts + country breakdown
+Dos tratamientos para lo que vence dentro del año, y es un ajuste, no una
+constante: `continuation` reserva el año entero y recoge la no renovación como
+riesgo ponderado (apéndice A de la metodología); `contractual` reconoce solo
+hasta la fecha de fin.
 
-**Print:** `window.print()` — `@media print` CSS forces single-column charts (`grid-template-columns:1fr`), `break-inside:avoid` on `.rsec`/`.rchart-w`, A4 portrait with 1.5cm margins.
-
-**Email modal:**
-- Preview rendered in `<iframe id="emlFrame">` (sandboxed)
-- **Copy HTML** button uses `ClipboardItem({'text/html': Blob})` → paste as formatted HTML in Outlook/Gmail
-- **Open Email Client** uses `mailto:` with plain text key figures in body
-- `buildEmailHTML()` uses `bgcolor` attributes + no `rgba()` for Outlook compatibility
+Detalle completo: `.specanchor/global/producto.spec.md`.
 
 ---
 
-## Session Persistence
-- `LS_KEY = 'jjv_bp_session'`
-- `autoSave()` runs on every `renderAll()` — saves CSV text + churn + cRev + risks + opps + assumps + filters
-- On next open a restore banner appears — one click restores full session without re-uploading CSV
+## Salidas
+
+| Salida | Función |
+|---|---|
+| Informe imprimible | `openReport()` → `#rptOvl` |
+| Excel | `exportXlsx()` — **escritor ZIP + OOXML propio**, porque SheetJS comunitario no incrusta imágenes y el libro lleva el logotipo |
+| CSV | los `export*()` de cada panel, **con BOM UTF-8** o Excel se come los acentos |
+| Plan `.json` | `savePlanFile()` — elige carpeta |
+| Entrega `.json` | `exportSubmission()` — decisiones, sin datos: ~3 KB |
+| Correo | resumen HTML al portapapeles con `ClipboardItem` |
+
+El favicon es el logotipo de J&J como **SVG en línea** en un `data:` URI.
 
 ---
 
-## Favicon
-Embedded as PNG base64 `data:` URL in `<link rel="icon">`. A separate `business_plan_tool.ico` file exists in the same folder for use with Windows shortcuts.
+## Cómo se edita este archivo — IMPORTANTE
 
----
+### Validar la sintaxis después de cada edición
 
-## Editing Guidelines — IMPORTANT
+Hay **un** solo bloque `<script>` en línea. Extrae el primero que no tenga
+`src=`:
 
-### Always validate JS after edits
-There are now **two** inline `<script>` blocks (a tiny theme-init one ~line 616, and the main app block ~line 1191). Extract the **second** (main) block to validate:
 ```bash
-# Extract main JS block and check syntax
-python3 -c "
-c=open('business_plan_tool.html',encoding='utf-8').read()
-i=c.find('<script>', c.find('<script>')+1)  # second <script>
-j=c.rfind('</script>')
-open('_check.js','w',encoding='utf-8').write(c[i+8:j])
-"
-node --check _check.js && rm -f _check.js
+python -c "import re;s=open('business_plan_tool.html',encoding='utf-8').read();open('_chk_tmp.js','w',encoding='utf-8').write([x for a,x in re.findall(r'<script\b([^>]*)>(.*?)</script>',s,re.S) if 'src=' not in a][0])" && node --check _chk_tmp.js && rm -f _chk_tmp.js
 ```
 
-### Use Python str.replace() for edits — NOT Write tool
-The file is ~1910 lines. The Write tool is unreliable at this size. Always use targeted Python replacements:
+### Usa scripts de parche con anclaje exacto — NO la herramienta Write
+
+El archivo tiene 8.420 líneas. Una sustitución ambigua es una edición silenciosa
+en el sitio equivocado:
+
 ```python
-c = open('business_plan_tool.html').read()
-c2 = c.replace(OLD, NEW, 1)
-assert c2 != c, "Replacement not found"
-open('business_plan_tool.html', 'w').write(c2)
+def rep(old, new, tag):
+    global s
+    assert old in s, 'NOT FOUND: ' + tag
+    assert s.count(old) == 1, 'AMBIGUOUS: ' + tag
+    assert old != new, 'NOOP: ' + tag
+    s = s.replace(old, new)
 ```
 
-### Template literals inside Python heredocs — FORBIDDEN
-Never use JS backtick strings inside Python `<< 'EOF'` blocks. Use string concatenation instead:
+Los `_inject_*.py` del repositorio son ejemplos de este patrón.
+
+### Nada de literales de plantilla dentro de un heredoc de Python
+
+Las comillas invertidas de JS dentro de `<< 'EOF'` rompen el heredoc. Escribe el
+script de parche a un archivo con la herramienta Write y ejecútalo.
+
+### Destruye los gráficos antes de recrearlos
+
 ```js
-// BAD  (breaks Python heredoc)
-'<td>' + `${value}` + '</td>'
-
-// GOOD
-'<td>' + value + '</td>'
+if (S.charts.x) S.charts.x.destroy();
+S.charts.x = new Chart(ctx, cfg);
 ```
 
-### Chart instances — always destroy before recreating
-```js
-if (S.charts.myChart) { S.charts.myChart.destroy(); }
-S.charts.myChart = new Chart(ctx, config);
-```
+Al verificar en un navegador sin foco, `requestAnimationFrame` se para: pon
+`window.Chart = undefined` antes de forzar un render.
 
-### Brace balance check
-```bash
-python3 -c "
-c=open('business_plan_tool.html',encoding='utf-8').read()
-i=c.find('<script>', c.find('<script>')+1)
-js=c[i+8:c.rfind('</script>')]
-print('{ =', js.count('{'), '} =', js.count('}'))
-"
-```
-`{` count must equal `}` count.
+### Nada de `rgba()` en el HTML del correo
 
-### rgba() not allowed in email HTML
-`buildEmailHTML()` must use solid hex colors only — Outlook strips `rgba()`.
+Outlook lo descarta. Solo hexadecimal sólido.
+
+### Antes de decir que funciona, ábrelo
+
+Compilar, montar y aparecer en el menú **no es funcionar**. Si no se ha
+ejecutado, se dice que no se ha ejecutado.
 
 ---
 
-## CSV Expected Columns (from Alteryx export)
-Key columns used by the tool:
+## Navegación
 
-| Column | Usage |
-|---|---|
-| `Coverage_type` | Detect T&M contracts (`isTM`) |
-| `Platform` | Chart grouping, benchmark tables |
-| `account_name` | Display name, top accounts ranking |
-| `_days` | Days to expiry (computed by Alteryx) |
-| `_rev` | Contract revenue value |
-| `_cluster` | Regional cluster grouping |
-| `country` | Country filter |
-
+- Protocolo y contratos — `.specanchor/README.md`
+- Mapa del archivo — `.specanchor/codemap.md`
+- Quién ve qué, y qué no impide — `.specanchor/global/alcance-y-usuarios.spec.md`
+- Método de previsión, ASP, upgrades — `.specanchor/global/producto.spec.md`
+- Entregar y consolidar — `.specanchor/global/entrega-y-consolidacion.spec.md`
+- Registros, claves, guardado — `.specanchor/global/datos-y-persistencia.spec.md`
+- Arquitectura y límites — `.specanchor/global/arquitectura.spec.md`
+- Verificación y secretos — `.specanchor/global/calidad-y-seguridad.spec.md`
+- Decisiones — `docs/decisiones/`
+- La variante parada con Supabase — `CLAUDE_supabase.md`

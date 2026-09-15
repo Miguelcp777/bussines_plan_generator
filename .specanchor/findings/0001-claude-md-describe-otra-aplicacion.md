@@ -1,7 +1,7 @@
 # Hallazgo 0001 · `CLAUDE.md` describe una aplicación que no es la viva
 
 **Encontrado:** 15 de septiembre de 2026, durante el bootstrap documental
-**Estado:** abierto · fuera del alcance del bootstrap
+**Estado:** **cerrado** el 15 de septiembre de 2026 por `tasks/TASK-002.spec.md`
 **Gravedad:** alta — son las instrucciones que lee cualquier agente que abra el
 repositorio
 
@@ -53,10 +53,15 @@ diciendo qué secciones describen la variante, y la activación del protocolo
 apuntando a los contratos reales. **No se ha reescrito**: es un cambio de
 contenido de instrucciones que merece su propia tarea y su revisión.
 
-## Qué falta
+## Cómo se cerró
 
-- Separar de verdad: dejar en `CLAUDE.md` lo que describe la aplicación viva y
-  mover a `CLAUDE_supabase.md` lo que describe la variante.
-- Decidir si `CLAUDE_supabase.md` sigue teniendo sentido, dado que la variante
-  está parada (`modules/variantes-y-legado.spec.md`, D-VAR-001).
-- Escribir `AGENTS.md`, para que Codex lea lo mismo que Claude Code.
+`TASK-002`, el 15 de septiembre de 2026. `CLAUDE.md` reescrito para la
+aplicación que existe, con cada afirmación técnica contrastada contra el código;
+`CLAUDE_supabase.md` se queda con lo de la variante y lo dice en su primera
+línea. Ya no son el mismo archivo.
+
+Al reescribirlo apareció que el desfase era **de dos generaciones**, no de una:
+lo que describía no era solo «la app con Supabase», era la app de ~1.910 líneas
+con cinco pestañas y `S.raw`/`cRev`/`churn`. El detalle, en `TASK-002`.
+
+`AGENTS.md` ya se escribió en TASK-001.

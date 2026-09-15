@@ -1,4 +1,23 @@
-# JJV Business Plan Tool — Claude Code Instructions
+# JJV Business Plan Tool — variante con Supabase (PARADA)
+
+> **Esto no describe la aplicación viva.** Describe
+> `business_plan_tool_supabase.html`, un camino alternativo con Supabase
+> —autenticación, RLS y planes guardados en Postgres— que está **parado**: ni se
+> despliega ni se mantiene.
+>
+> La aplicación que se usa es `business_plan_tool.html`, y **no tiene Supabase,
+> ni autenticación, ni servidor**. Sus instrucciones son `CLAUDE.md`.
+>
+> Se conserva porque resuelve el mismo problema de multi-usuario por otro
+> camino, ese sí con aislamiento real. Si algún día el alcance tiene que ser un
+> control de verdad, se empieza por aquí y no de cero. Ver
+> `docs/decisiones/0001-un-archivo-con-tabla-de-usuarios.md` y
+> `.specanchor/modules/variantes-y-legado.spec.md` (D-VAR-001).
+>
+> **Ojo:** lo que sigue describe además una generación anterior de la propia
+> aplicación —~1.910 líneas, cinco pestañas, `S.raw`/`cRev`/`churn`, solo CSV—.
+> No sirve para editar la aplicación viva.
+
 
 ## Overview
 Static single-file web app talking directly to **Supabase** (Postgres + Auth) via `supabase-js`.
