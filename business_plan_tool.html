@@ -397,6 +397,9 @@ table.dt tfoot td{padding:8px 10px;font-weight:700;border-top:2px solid var(--bd
 .whoami label{font-weight:700;font-size:.86rem;display:block}
 .whoami .wh{font-size:.76rem;color:var(--mut);margin-top:2px;line-height:1.45}
 .whoami select{width:auto;min-width:230px;max-width:100%}
+.whoami .wr{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.whoami .wr input{width:auto;min-width:215px}
+.whoami .wor{font-size:.74rem;color:var(--mut)}
 /* La misma identidad, en la barra de arriba, para que nunca haya duda de "como quién". */
 .top-who{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--navtx);white-space:nowrap;
   border-left:1px solid rgba(255,255,255,.15);padding-left:11px;margin-left:2px}
@@ -744,8 +747,15 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
           <div class="wh" id="whoHint">Pick your name — the plan is then scoped to your countries.</div>
         </div>
       </div>
-      <select class="inp" id="whoSel" onchange="setUser(this.value)"></select>
+      <div class="wr">
+        <select class="inp" id="whoSel" onchange="setUser(this.value)"></select>
+        <div class="wor">or</div>
+        <input class="inp" id="whoMail" type="email" placeholder="your @its.jnj.com address"
+               onkeydown="if(event.key==='Enter') setUserByEmail(this.value)"
+               onchange="setUserByEmail(this.value)">
+      </div>
     </div>
+    <div id="whoMailMsg"></div>
 
     <div id="restoreBox" class="restore" style="display:none">
       <div class="note s" style="flex:1">
@@ -1804,17 +1814,37 @@ const APP_VERSION = '2026.09.1';
    `countries:['ES','PT']` para excepciones que no encajen en un cluster.
    ============================================================ */
 const DEFAULT_USERS = [
-  { email:'director@its.jnj.com', name:'Director de servicio', role:'director', clusters:'*' },
-  { email:'admin@its.jnj.com',    name:'Administrador',        role:'admin',    clusters:'*' },
-  { email:'iberia@its.jnj.com',   name:'Manager · Iberia',     role:'manager',  clusters:['Iberia'] },
-  { email:'italy@its.jnj.com',    name:'Manager · Italia',     role:'manager',  clusters:['Italy'] },
-  { email:'dach@its.jnj.com',     name:'Manager · DACH',       role:'manager',  clusters:['DACH'] },
+  { email:'NPohardy@ITS.JNJ.com', name:'Nicolas Pohardy',   role:'director', clusters:'*',
+    title:'Director Technical Service EMEA' },
+
+  { email:'SYanikog@ITS.JNJ.com', name:'Serdar Yanikoglu',  role:'manager',  label:'CEEMA',
+    title:'Field Service Manager, CEEMA & UK/IE',
+    /* CEEMA sin UK/IE: el plan del Reino Unido lo hace Micheál, que es quien lo supervisa.
+       Si aquí tiene que llevar también UK/IE, se le añade 'UK & Ireland' a esta lista y se
+       le quita a él — pero no pueden tenerlo los dos: al consolidar, la segunda entrega se
+       rechaza por pisar a la primera, que es justo lo que hay que evitar. */
+    clusters:['CEE','Turkey','Russia & CIS','Middle East','Africa'] },
+
+  { email:'MDonoho1@ITS.JNJ.com', name:'Micheál Donohoe',   role:'manager',
+    title:'Supervisor UK', clusters:['UK & Ireland'] },
+
+  { email:'MCasti62@ITS.JNJ.com', name:'Miguel Castillo',   role:'manager',  admin:true,
+    title:'Supervisor Technical Field Service Iberia', clusters:['Iberia'] },
+
+  { email:'AKendir@ITS.JNJ.com',  name:'Zekai Kendir',      role:'manager',
+    title:'Field Service Supervisor DACH', clusters:['DACH'] },
+
+  { email:'TKrody@ITS.JNJ.com',   name:'Thomas Krody',      role:'manager',
+    title:'Sr. Technical Service Coordinator EMEA', clusters:['Nordics'] },
+
+  { email:'ececchi1@ITS.JNJ.com', name:'Enrico Cecchinato', role:'manager',
+    title:'Lead Field Service Engineer (Ld FSE)', clusters:['Italy'] },
 ];
 
 const users = () => (S.st.users && S.st.users.length ? S.st.users : DEFAULT_USERS);
 const ROLE_LBL = { manager:'Manager', director:'Director', admin:'Administrador' };
 const seesAll  = u => !u || u.clusters === '*' || u.role === 'director' || u.role === 'admin';
-const canConsolidate = () => { const u = currentUser(); return !!u && (u.role === 'director' || u.role === 'admin'); };
+const canConsolidate = () => { const u = currentUser(); return !!u && (u.role === 'director' || u.role === 'admin' || u.admin === true); };
 
 /* Los países que le tocan. null = sin restricción. */
 function userScope(u){
@@ -1829,6 +1859,7 @@ function userScope(u){
 function scopeLabel(u){
   u = u || currentUser();
   if (seesAll(u)) return 'EMEA';
+  if (u.label) return u.label;
   const c = (u.clusters || []).concat(u.countries || []);
   return c.length ? c.join('-') : 'EMEA';
 }
@@ -1839,6 +1870,23 @@ function currentUser(){
     return users().find(u => u.email === e) || null;
   } catch(err){ return null; }
 }
+/* Entrar escribiendo el correo. Si no está en la tabla se dice quién sí está, en vez de
+   dejar la pantalla igual y que parezca que no ha pasado nada. */
+function setUserByEmail(raw){
+  const e = String(raw || '').trim().toLowerCase();
+  if (!e){ setHTML('whoMailMsg', ''); return; }
+  const u = users().find(x => String(x.email).toLowerCase() === e);
+  if (!u){
+    setHTML('whoMailMsg', `<div class="note w"><span class="ni2">!</span><div><b>${esc(raw)}</b> is not in
+      the user table, so there is nothing to scope the plan to. The names in the list above are the ones
+      set up for this cycle — pick yours, or ask for the table to be updated.</div></div>`);
+    return;
+  }
+  setHTML('whoMailMsg', '');
+  const box = $('whoMail'); if (box) box.value = '';
+  setUser(u.email);
+}
+
 function setUser(email){
   try { email ? localStorage.setItem(LS_USER, email) : localStorage.removeItem(LS_USER); } catch(err){}
   const u = currentUser();
@@ -2602,7 +2650,7 @@ function buildRecords(){
   attachBundle();
   S.rows.forEach(r => { r._cls = classify(r); });
 
-  const scope = userScope(currentUser());
+  const scope = S.consol ? null : userScope(currentUser());
   if (scope){
     S._fleetRows = S.rows;               // solo para el comparador del ASP, en agregado
     S.rows = S.rows.filter(r => scope.has(r.country));
@@ -3462,7 +3510,7 @@ function renderWhoami(){
   if (sel){
     sel.innerHTML = `<option value="">— choose —</option>` +
       users().map(x => `<option value="${esc(x.email)}" ${u && u.email===x.email ? 'selected':''}>${
-        esc(x.name)} · ${esc(ROLE_LBL[x.role] || x.role)} · ${esc(scopeLabel(x))}</option>`).join('');
+        esc(x.name)} · ${esc(scopeLabel(x))}${x.title ? ' · ' + esc(x.title) : ''}</option>`).join('');
   }
   const hint = $('whoHint');
   if (hint) setHTML('whoHint', u
