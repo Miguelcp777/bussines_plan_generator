@@ -152,6 +152,11 @@ html[data-theme="dark"]{--jjmark:#fff}
 .xg .btn:last-child{border-top-right-radius:var(--rs);border-bottom-right-radius:var(--rs);
   border-left:0;color:var(--mut);font-weight:600}
 .xg .btn:last-child:hover{color:var(--tx)}
+/* Alcance puesto: el comparador sigue siendo toda EMEA, pero solo en agregado. Fuera
+   todo lo que enumera países o clientes uno a uno. */
+body.asp-agg #aspCtryCard,
+body.asp-agg #aspDd,
+body.asp-agg .chw:has(#chAspCtry){display:none}
 .btn.dng{color:var(--red);border-color:var(--red)}
 .btn.dng:hover{background:var(--red-s)}
 .btn.gho{border-color:transparent;background:transparent}
@@ -384,6 +389,20 @@ table.dt tfoot td{padding:8px 10px;font-weight:700;border-top:2px solid var(--bd
 .su{width:100%;max-width:900px}
 .su-h{text-align:center;margin-bottom:24px}
 .su-h .su-jj{height:46px;color:var(--jjmark);margin:0 auto 20px}
+/* Quién abre la herramienta. Va antes que los archivos porque decide qué se carga. */
+.whoami{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;
+  background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r);padding:13px 16px;margin-bottom:16px}
+.whoami .wl{display:flex;align-items:center;gap:11px;min-width:0}
+.whoami .wi{font-size:1.2rem;flex:none}
+.whoami label{font-weight:700;font-size:.86rem;display:block}
+.whoami .wh{font-size:.76rem;color:var(--mut);margin-top:2px;line-height:1.45}
+.whoami select{width:auto;min-width:230px;max-width:100%}
+/* La misma identidad, en la barra de arriba, para que nunca haya duda de "como quién". */
+.top-who{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--navtx);white-space:nowrap;
+  border-left:1px solid rgba(255,255,255,.15);padding-left:11px;margin-left:2px}
+.top-who b{color:#fff;font-weight:600}
+.top-who .sc{background:rgba(255,255,255,.12);border-radius:9px;padding:1px 7px;font-size:.72rem;color:#fff}
+.navf .ver{display:block;font-size:.68rem;color:var(--mut);margin-top:3px;opacity:.8}
 .su-h .mk{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#7a0a1e);
      display:grid;place-items:center;margin:0 auto 13px;font-size:1.4rem;color:#fff;box-shadow:var(--shd2)}
 .su-h h1{font-size:1.72rem;font-weight:700;letter-spacing:-.7px}
@@ -717,6 +736,17 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
       <p>Bottom-up maintenance revenue forecast from the installed base — baseline, risk, opportunity and scenarios</p>
     </div>
 
+    <div class="whoami" id="whoBox">
+      <div class="wl">
+        <span class="wi">👤</span>
+        <div>
+          <label for="whoSel">Who is working on this plan?</label>
+          <div class="wh" id="whoHint">Pick your name — the plan is then scoped to your countries.</div>
+        </div>
+      </div>
+      <select class="inp" id="whoSel" onchange="setUser(this.value)"></select>
+    </div>
+
     <div id="restoreBox" class="restore" style="display:none">
       <div class="note s" style="flex:1">
         <span class="ni2">💾</span>
@@ -807,7 +837,8 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
     <div class="top-logo">
       <svg class="jj" viewBox="0 0 1205.4 512.41" role="img" aria-label="Johnson &amp; Johnson"><use href="#jj"/></svg>
       <span class="div"></span>
-      <span>BP Builder</span><span class="sub">Service Contracts</span></div>
+      <span>BP Builder</span><span class="sub">Service Contracts</span>
+      <span class="top-who" id="topWho" hidden></span></div>
     <div class="tf">
       <label>Cycle</label>
       <select id="cyType" onchange="onCycle()">
@@ -826,6 +857,8 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
     <div class="top-sp"></div>
     <button class="tbtn" onclick="toggleTheme()" title="Light / dark"><span class="ic" id="thIc">◐</span></button>
     <button class="tbtn" onclick="savePlanFile()" title="Download the full plan as a .json snapshot"><span class="ic">💾</span>Save plan</button>
+    <button class="tbtn" id="btnSubmit" hidden onclick="exportSubmission()"
+      title="Hand your plan to the director. Decisions only — the data stays where it is."><span class="ic">📤</span>Submit</button>
     <button class="tbtn pri" onclick="openReport()"><span class="ic">📄</span>Generate report</button>
   </header>
 
@@ -846,10 +879,12 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
     <button class="ni" data-p="assum" onclick="go('assum')"><span class="ni-ic">📋</span>Assumptions<span class="ni-bdg" id="bdgAss">0</span></button>
     <button class="ni" data-p="dq"    onclick="go('dq')"><span class="ni-ic">✓</span>Data quality<span class="ni-bdg" id="bdgDq">0</span></button>
     <button class="ni" data-p="ver"   onclick="go('ver')"><span class="ni-ic">⎘</span>Versions<span class="ni-bdg" id="bdgVer">0</span></button>
+    <button class="ni" id="niConsol" data-p="consol" hidden onclick="go('consol')"><span class="ni-ic">🧩</span>Consolidation<span class="ni-bdg" id="bdgConsol">0</span></button>
     <button class="ni" data-p="set"   onclick="go('set')"><span class="ni-ic">⚙</span>Settings</button>
     <div class="nav-foot">
       <b id="navSrc">—</b>
       <span id="navMeta">—</span>
+      <span class="ver" id="navVer"></span>
     </div>
   </nav>
 
@@ -1325,6 +1360,7 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
         </div>
       </div>
 
+      <div id="aspAggNote"></div>
       <div id="aspBasisWarn"></div>
       <div class="kpis" id="aspKpis"></div>
 
@@ -1378,7 +1414,7 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="aspCtryCard">
         <div class="card-h"><h3>By country</h3><span class="sub" id="aspCtrySub">ranked</span></div>
         <div class="card-b tight"><div class="tw scr"><table class="dt" id="tblAspCtry"></table></div></div>
       </div>
@@ -1388,6 +1424,29 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
         <div class="card-b tight"><div class="tw"><table class="dt" id="tblAspSpread"></table></div></div>
       </div>
 
+    </section>
+
+    <!-- ===== CONSOLIDATION ===== -->
+    <section class="pane" id="p-consol">
+      <div class="ph">
+        <div><h1>Consolidation</h1><p>Absorb each manager's submission as it arrives. Submissions do not
+          overlap — different countries, different systems — so adding one never disturbs another.</p></div>
+        <div class="ph-a">
+          <button class="btn" onclick="document.getElementById('consolInput').click()">📥 Add submissions…</button>
+          <input type="file" id="consolInput" accept=".json" multiple style="display:none" onchange="onConsolPick(event)">
+        </div>
+      </div>
+      <div id="consolMsg"></div>
+      <div class="kpis" id="consolKpis"></div>
+      <div class="card">
+        <div class="card-h"><h3>Who has submitted</h3><span class="sub">and what is still missing</span></div>
+        <div class="card-b tight"><div class="tw"><table class="dt" id="tblConsol"></table></div></div>
+      </div>
+      <div class="card" id="cardRestate">
+        <div class="card-h"><h3>As submitted, and restated</h3>
+          <span class="sub">the same countries on your settings — this is what stops the argument</span></div>
+        <div class="card-b tight"><div class="tw"><table class="dt" id="tblRestate"></table></div></div>
+      </div>
     </section>
 
     <!-- ===== INSIGHTS ===== -->
@@ -1494,6 +1553,30 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
     <!-- ===== SETTINGS ===== -->
     <section class="pane" id="p-set">
       <div class="ph"><div><h1>Settings</h1><p>The decisions that section 12 of the methodology says must be taken before the numbers mean anything.</p></div></div>
+
+      <div class="card" id="cardScope">
+        <div class="card-h"><h3>Who you are working as</h3>
+          <span class="sub">what the scope does, and what it does not</span></div>
+        <div class="card-b">
+          <div class="grid g2">
+            <div class="fld">
+              <label for="setWhoSel">Identity</label>
+              <select class="inp" id="setWhoSel" onchange="setUser(this.value)"></select>
+              <span class="hint" id="setWhoHint"></span>
+            </div>
+            <div class="fld">
+              <label>Coverage of the user table</label>
+              <span class="hint" id="setScopeAudit">Load the installed base to check it.</span>
+            </div>
+          </div>
+          <div class="note w"><span class="ni2">!</span><div>
+            <b>This is a working convenience, not an access control.</b> The file contains the whole EMEA
+            installed base and runs in your browser, so anyone who opens it can pick a different name here
+            and see another cluster. It is here to keep each manager on their own countries — not to keep
+            anyone out. If the data needs to be genuinely restricted, it cannot travel as one file.
+          </div></div>
+        </div>
+      </div>
 
       <div class="card">
         <div class="card-h"><h3>Revenue recognition</h3></div>
@@ -1699,6 +1782,81 @@ const S = {
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MON3   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const LS_KEY = 'scbp_session_v1';
+const LS_USER = 'scbp_user_v1';        // quién eres: de la persona y su equipo, no del plan
+const APP_VERSION = '2026.09.1';
+
+/* ============================================================
+   QUIÉN ABRE LA HERRAMIENTA
+
+   Cada manager ve los países de su competencia. Conviene tener claro qué es y qué no es:
+   el archivo contiene toda EMEA y se ejecuta en la máquina de quien lo abre, así que
+   esto es una COMODIDAD DE TRABAJO, NO UN CONTROL DE ACCESO. Quien quiera mirar otro
+   cluster —o elegirse el rol de director— puede. Está dicho en Settings y en el informe,
+   y no debe describirse como acceso restringido ante nadie que dependa de esa afirmación.
+
+   Lo que sí hace de verdad: acotar los datos en el origen. El recorte se aplica una sola
+   vez, al construir los registros, así que Data Quality, ASP, exportaciones e informe
+   quedan acotados sin excepciones. Antes el filtro por cluster se lo saltaban nueve
+   sitios del código —entre ellos la exportación de Data Quality, que sacaba la flota
+   entera equipo por equipo—, así que ni como comodidad funcionaba.
+
+   Sustituye esta tabla por la real. `clusters:'*'` es toda EMEA; se admite
+   `countries:['ES','PT']` para excepciones que no encajen en un cluster.
+   ============================================================ */
+const DEFAULT_USERS = [
+  { email:'director@its.jnj.com', name:'Director de servicio', role:'director', clusters:'*' },
+  { email:'admin@its.jnj.com',    name:'Administrador',        role:'admin',    clusters:'*' },
+  { email:'iberia@its.jnj.com',   name:'Manager · Iberia',     role:'manager',  clusters:['Iberia'] },
+  { email:'italy@its.jnj.com',    name:'Manager · Italia',     role:'manager',  clusters:['Italy'] },
+  { email:'dach@its.jnj.com',     name:'Manager · DACH',       role:'manager',  clusters:['DACH'] },
+];
+
+const users = () => (S.st.users && S.st.users.length ? S.st.users : DEFAULT_USERS);
+const ROLE_LBL = { manager:'Manager', director:'Director', admin:'Administrador' };
+const seesAll  = u => !u || u.clusters === '*' || u.role === 'director' || u.role === 'admin';
+const canConsolidate = () => { const u = currentUser(); return !!u && (u.role === 'director' || u.role === 'admin'); };
+
+/* Los países que le tocan. null = sin restricción. */
+function userScope(u){
+  if (seesAll(u)) return null;
+  const map = S.st.clusters || DEFAULT_CLUSTERS;
+  const out = new Set();
+  (u.clusters || []).forEach(c => (map[c] || []).forEach(cc => out.add(String(cc).toUpperCase())));
+  (u.countries || []).forEach(cc => out.add(String(cc).toUpperCase()));
+  return out.size ? out : null;
+}
+/* Cómo se llama su alcance, para títulos y nombres de archivo */
+function scopeLabel(u){
+  u = u || currentUser();
+  if (seesAll(u)) return 'EMEA';
+  const c = (u.clusters || []).concat(u.countries || []);
+  return c.length ? c.join('-') : 'EMEA';
+}
+function currentUser(){
+  try {
+    const e = localStorage.getItem(LS_USER);
+    if (!e) return null;
+    return users().find(u => u.email === e) || null;
+  } catch(err){ return null; }
+}
+function setUser(email){
+  try { email ? localStorage.setItem(LS_USER, email) : localStorage.removeItem(LS_USER); } catch(err){}
+  const u = currentUser();
+  logIt('User changed', u ? `${u.name} · ${scopeLabel(u)}` : 'nobody selected');
+  if (S.raw && S.raw.length){ buildRecords(); buildFilters(); renderAll(); }
+  renderWhoami();
+  if (typeof buildSettingsUI === 'function' && document.querySelector('.pane.act#p-set')) buildSettingsUI();
+}
+/* El sello que viaja dentro de cada plan: de quién es y qué cubre. */
+function scopeStamp(){
+  const u = currentUser();
+  return {
+    role: S.consol ? 'consolidated' : (u ? u.role : 'full'),
+    user: u ? u.name : '', email: u ? u.email : '',
+    label: scopeLabel(u),
+    countries: u && !seesAll(u) ? [...(userScope(u) || [])] : null
+  };
+}
 
 const DEFAULT_CLUSTERS = {
   Iberia:['ES','PT','AD','GI'], Italy:['IT','SM','VA','MT'], DACH:['DE','AT','CH','LI'],
@@ -2164,6 +2322,7 @@ function ingestMatrix(matrix, sheetNames, picked){
    in place instead. */
 function afterLoad(msgHTML){
   setHTML('loadMsg', msgHTML);
+  saveSource();                 // en los dos caminos: la primera carga también cuenta
   if ($('app').classList.contains('on')){
     buildFilters(); clearFilters(); buildSettingsUI(); renderNavSource(); renderAll();
     toast('Installed base reloaded');
@@ -2296,10 +2455,12 @@ function ingestReclass(matrix, fileName, sheetNames, picked){
                 matched:0, matchedVal:0, unmatched:0 };
 
   if (S.rows.length){
+    scopeReclass(userScope(currentUser()));
     attachBundle();
     S.rows.forEach(r => r._cls = classify(r));
     applyDefaults();
     buildFilters();
+    saveSource();
     logIt('Service Reclass loaded', `${bundleRows} bundled contracts · ${Math.round(total).toLocaleString()} USD annualised · ${S.reclass.matched} matched to the installed base`);
     if ($('app').classList.contains('on')){
       renderNavSource(); buildSettingsUI(); renderAll();
@@ -2366,6 +2527,24 @@ function buildRecords(){
   });
   if (!S.fx.USD) S.fx.USD = 1;
 
+  /* La clave de cada registro no puede depender del número de fila.
+     Era `serial|contract|coverage|i`, con `i` el índice en S.raw. Mientras todo el mundo
+     trabaje sobre el mismo extracto los índices coinciden y funciona por casualidad; el
+     día que alguien vuelva a exportar de SAP con otro orden, las decisiones se pegarían a
+     equipos distintos sin un solo error y con cifras plausibles. Es el peor fallo que
+     puede tener esta herramienta, porque no parece un fallo.
+
+     El ordinal de abajo es *dentro del triple*, no global: dos filas que comparten
+     serie, contrato y cobertura siguen juntas y en el mismo orden relativo aunque se
+     reordene el archivo entero. */
+  const ord = new Map();
+  const stableKey = (serial, contract, cov) => {
+    const t = [serial || 'NOSN', contract || 'NOCT', cov || '-'].join('|');
+    const n = ord.get(t) || 0;
+    ord.set(t, n + 1);
+    return n ? t + '#' + n : t;
+  };
+
   S.rows = S.raw.map((r,i) => {
     const cur   = (gs(r,'currency') || 'USD').toUpperCase();
     const rate  = numOf(g(r,'fxRate')) || S.fx[cur] || 1;
@@ -2388,7 +2567,8 @@ function buildRecords(){
 
     return {
       _i: i,
-      _key: [serial || 'NOSN', contract || 'NOCT', gs(r,'coverage') || '-', i].join('|'),
+      _key: stableKey(serial, contract, gs(r,'coverage')),
+      _keyLegacy: [serial || 'NOSN', contract || 'NOCT', gs(r,'coverage') || '-', i].join('|'),
       account: gs(r,'account') || '(no account)',
       custNo: gs(r,'custNo'), country, city: gs(r,'city'),
       cluster: clusterOf(country),
@@ -2405,10 +2585,105 @@ function buildRecords(){
     };
   });
 
+  /* El recorte va AQUÍ y en ningún otro sitio.
+     Filtrar en cada pantalla obligaba a acordarse en nueve sitios —y a acordarse otra vez
+     cada vez que se añadiera uno—. Acotando S.rows, todo lo que cuelga de ella queda
+     acotado sin excepciones: Data Quality y su exportación, el ASP, el autocompletado de
+     los registros, el informe y los diez exportadores.
+     S.raw se queda entera y con sus índices: hace falta para cambiar de usuario sin
+     recargar los archivos, y para que el director consolide. */
+  /* El orden importa. Se construye la flota ENTERA —tipos de cambio, bundle y
+     clasificación— y solo después se recorta. Al revés, los registros de fuera del
+     alcance se quedarían sin bundle y sin tipo de cambio aplicado, y el comparador del
+     ASP —que es lo único que los mira— compararía contra cifras a medias.
+     El recorte es un filtro sobre las mismas referencias, así que no duplica nada. */
+  S.fleet = S.rows.length;
   applyFx();
   attachBundle();
   S.rows.forEach(r => { r._cls = classify(r); });
+
+  const scope = userScope(currentUser());
+  if (scope){
+    S._fleetRows = S.rows;               // solo para el comparador del ASP, en agregado
+    S.rows = S.rows.filter(r => scope.has(r.country));
+  } else {
+    S._fleetRows = null;
+  }
+  scopeReclass(scope);                   // el resumen del Reclass, al mismo alcance
+  attachBundle();                        // recontar emparejados dentro del alcance
+
+  migrateKeys();          // antes de applyDefaults, o sembraría claves nuevas vacías
   applyDefaults();
+}
+
+/* El resumen del Reclass, al alcance del usuario.
+
+   Sin esto, la comprobación de «series sin equipo» pasa a listar el resto de Europa
+   —cuenta a cuenta y con importes— en la exportación de Data Quality de un manager.
+   Comprobado antes de arreglarlo: a un manager de Iberia le salían 458 filas, las 458 de
+   fuera de su alcance, con nombres de cliente del Reino Unido.
+
+   Se recorta por país, no por serie: una serie que está en el Reclass y no en su
+   installed base sigue siendo un defecto que debe ver, si es de un país suyo. */
+function scopeReclass(sc){
+  const rc = S.reclass;
+  if (!rc || !rc.bySerial) return;
+  if (!sc || S.consol){
+    if (rc._full){ Object.assign(rc, rc._full); rc._scoped = null; }
+    return;
+  }
+  if (rc._scoped === scopeLabel()) return;
+  rc._full = rc._full || {
+    bySerial: rc.bySerial, dupeList: rc.dupeList, zeroList: rc.zeroList,
+    bundleRows: rc.bundleRows, directRows: rc.directRows, total: rc.total,
+    dupes: rc.dupes, zeroFlagged: rc.zeroFlagged
+  };
+  const f = rc._full;
+  const mine = h => !h || !h.country || sc.has(String(h.country).toUpperCase());
+  const keep = {};
+  Object.entries(f.bySerial).forEach(([k,h]) => { if (mine(h)) keep[k] = h; });
+  const ofMine = x => mine(f.bySerial[String((x && x.serial) || '').trim()]);
+  rc.bySerial    = keep;
+  rc.dupeList    = (f.dupeList || []).filter(ofMine);
+  rc.zeroList    = (f.zeroList || []).filter(ofMine);
+  rc.bundleRows  = Object.values(keep).filter(h => h.bundle > 0).length;
+  rc.directRows  = Object.values(keep).length - rc.bundleRows;
+  rc.total       = sum(Object.values(keep), h => h.bundle || 0);
+  rc.dupes       = rc.dupeList.length;
+  rc.zeroFlagged = rc.zeroList.length;
+  rc._scoped     = scopeLabel();
+}
+
+/* ¿Se queda alguien fuera del reparto?
+   clusterOf() devuelve 'Other' para un país que no está en el mapa y 'Unassigned' si
+   viene vacío. Esas filas no son de ningún manager y desaparecerían de la suma de
+   alcances sin que nadie lo note. */
+function scopeAudit(){
+  const map = S.st.clusters || DEFAULT_CLUSTERS;
+  const owned = new Set();
+  users().forEach(u => { const sc = userScope(u); if (sc) sc.forEach(c => owned.add(c)); });
+  const all = uniq(S.raw.map(r => String(r[S.map.country] ?? '').trim().toUpperCase())).filter(Boolean);
+  const orphan = all.filter(c => !owned.has(c));
+  const rows = orphan.length
+    ? S.raw.filter(r => orphan.includes(String(r[S.map.country] ?? '').trim().toUpperCase())).length : 0;
+  return { total:S.raw.length, orphanCountries:orphan, orphanRows:rows,
+           covered:S.raw.length - rows };
+}
+
+/* Traduce las claves de un plan guardado con el formato viejo.
+   Es exacta, no heurística: la clave antigua lleva dentro el índice de fila y la
+   traducción corre contra el mismo `raw` con el que se construyó. */
+function migrateKeys(){
+  if (!S._needKeyMigration) return;
+  const m = new Map(S.rows.map(r => [r._keyLegacy, r._key]));
+  const dec = {};
+  Object.entries(S.dec).forEach(([k, v]) => { dec[m.get(k) || k] = v; });
+  S.dec = dec;
+  [S.risks, S.opps].forEach(list => list.forEach(e => {
+    if (e.key && m.has(e.key)) e.key = m.get(e.key);
+  }));
+  S._needKeyMigration = false;
+  logIt('Record keys migrated', `${m.size} systems moved to the stable key format`);
 }
 
 /* ---------- currency rates ----------
@@ -2458,6 +2733,7 @@ function attachBundle(){
   const rc = S.reclass;
   S.rows.forEach(r => { r.bundleUsd = 0; r.rcTreat = ''; r.payer = r._usd>0 ? 'direct' : 'none'; });
   if (!rc || !rc.bySerial) return;
+
   Object.values(rc.bySerial).forEach(h => h.seen = false);
   let matched = 0, matchedVal = 0;
   S.rows.forEach(r => {
@@ -3179,7 +3455,157 @@ function startApp(){
   renderNavSource();
 }
 
+/* Nombre y alcance activos, arriba y en el arranque. */
+function renderWhoami(){
+  const u = currentUser();
+  const sel = $('whoSel');
+  if (sel){
+    sel.innerHTML = `<option value="">— choose —</option>` +
+      users().map(x => `<option value="${esc(x.email)}" ${u && u.email===x.email ? 'selected':''}>${
+        esc(x.name)} · ${esc(ROLE_LBL[x.role] || x.role)} · ${esc(scopeLabel(x))}</option>`).join('');
+  }
+  const hint = $('whoHint');
+  if (hint) setHTML('whoHint', u
+    ? (seesAll(u) ? `<b>${esc(ROLE_LBL[u.role]||u.role)}</b> — you see the whole EMEA fleet.`
+                  : `Scoped to <b>${esc(scopeLabel(u))}</b>: every screen, export and report shows only your
+                     countries. It keeps you out of other clusters' data, but it does not lock you out —
+                     the file holds all of EMEA and runs on your machine.`)
+    : 'Pick your name — the plan is then scoped to your countries.');
+  const s2 = $('setWhoSel');
+  if (s2 && sel) s2.innerHTML = sel.innerHTML;
+  const h2 = $('setWhoHint');
+  if (h2) h2.innerHTML = hint ? hint.innerHTML : '';
+  /* Quién se queda fuera del reparto: un país que no es de ningún manager desaparece de
+     la suma de los alcances sin que nadie lo note, y ahí es donde se pierde revenue. */
+  const au = $('setScopeAudit');
+  if (au){
+    if (!S.raw || !S.raw.length || !S.map || S.map.country == null){
+      au.textContent = 'Load the installed base to check it.';
+    } else {
+      const a = scopeAudit();
+      au.innerHTML = a.orphanRows
+        ? `<b class="c-o">${a.orphanRows.toLocaleString()} of ${a.total.toLocaleString()} records</b> belong to no
+           manager in the user table (${esc(a.orphanCountries.slice(0,8).join(', '))}${
+           a.orphanCountries.length > 8 ? '…' : ''}). Nobody is planning them.`
+        : `All ${a.total.toLocaleString()} records fall inside somebody's scope.`;
+    }
+  }
+  const t = $('topWho');
+  if (t){
+    t.hidden = !u;
+    if (u) setHTML('topWho', `<b>${esc(u.name)}</b><span class="sc">${esc(scopeLabel(u))}</span>`);
+  }
+  const sb = $('btnSubmit');
+  if (sb) sb.hidden = !u || seesAll(u) || !!S.consol;
+  /* La consolidación solo la ve quien la puede hacer. Es una comodidad —quien quiera
+     puede elegirse director en el desplegable—, no una barrera; dicho una vez en Settings. */
+  const nc = $('niConsol');
+  if (nc) nc.hidden = !canConsolidate();
+}
+
+function onConsolPick(ev){
+  const files = [...ev.target.files]; ev.target.value = '';
+  if (!files.length) return;
+  consolInit();
+  const notes = [];
+  let done = 0;
+  files.forEach(f => {
+    const rd = new FileReader();
+    rd.onload = () => {
+      let b = null;
+      try { b = JSON.parse(rd.result); } catch(e){ notes.push({ f:f.name, stop:['Not valid JSON.'] }); }
+      if (b){
+        let r = absorb(b);
+        if (!r.ok && r.already){
+          const ok = confirm(`${r.cluster} is already absorbed (r${r.already.revision}).\n\n`
+            + `Replace it with r${r.revision}? The other clusters are left untouched.`);
+          if (ok) r = absorb(b, { replace:true });
+        }
+        notes.push({ f:f.name, ...r });
+      }
+      if (++done === files.length){
+        S.blobScope = null;
+        renderAll(); renderConsol(notes);
+        const okN = notes.filter(n => n.ok).length;
+        toast(okN ? `${okN} submission${okN===1?'':'s'} absorbed` : 'Nothing absorbed — see the notes', !okN);
+      }
+    };
+    rd.readAsText(f);
+  });
+}
+
+function renderConsol(notes){
+  if (!document.getElementById('p-consol')) return;
+  const c = S.consol;
+  const map = S.st.clusters || DEFAULT_CLUSTERS;
+  const expected = uniq(users().filter(u => !seesAll(u)).map(u => scopeLabel(u)));
+  const got = new Set((c ? c.absorbed : []).map(a => a.cluster));
+
+  setHTML('consolMsg', !notes ? '' : notes.map(n => {
+    if (n.ok) return `<div class="note s"><span class="ni2">✓</span><div><b>${esc(n.cluster)}</b> absorbed —
+      ${n.decisions} decisions, ${n.registers} register entries.
+      ${(n.warn||[]).length ? `<br><span class="c-o">${(n.warn||[]).map(esc).join(' · ')}</span>` : ''}</div></div>`;
+    return `<div class="note w"><span class="ni2">!</span><div><b>${esc(n.f)}</b> not absorbed.
+      ${(n.stop||[]).map(esc).join(' ')} ${(n.warn||[]).map(esc).join(' ')}</div></div>`;
+  }).join(''));
+
+  const rows = (c ? c.absorbed : []).map(a => {
+    const sub = S.rows.filter(r => (a.countries||[]).includes(r.country));
+    const e = sub.length ? engine(sub, { risk:1, opp:1 }) : null;
+    return { a, n:sub.length, exp:e ? e.expected : 0, base:e ? e.B : 0 };
+  });
+  const totalExp = sum(rows.map(r => r.exp));
+
+  setHTML('consolKpis', [
+    kpi('b','Clusters in', `${got.size}${expected.length ? ' / ' + expected.length : ''}`,
+        expected.length ? `${expected.filter(x=>!got.has(x)).length} still to come` : 'no user table set', 'records'),
+    kpi('g','Consolidated expected', money(totalExp), `${sum(rows.map(r=>r.n)).toLocaleString()} systems`, 'expRev'),
+    kpi('k','Records in file', S.rows.length.toLocaleString(), `${S.fleet||S.rows.length} in the source`, 'records')
+  ].join(''));
+
+  $('tblConsol').innerHTML = `<thead><tr><th>Cluster</th><th>Submitted by</th><th class="c">Rev</th>
+      <th>Submitted</th><th>Absorbed</th><th class="c">Systems</th><th class="r">Expected</th><th></th></tr></thead><tbody>`
+    + (rows.length ? rows.map(r => `<tr>
+        <td><b>${esc(r.a.cluster)}</b><span class="tsub">${esc((r.a.countries||[]).join(', '))}</span></td>
+        <td>${esc(r.a.by || '—')}</td>
+        <td class="c">r${r.a.revision}</td>
+        <td class="c-m">${r.a.submittedAt ? new Date(r.a.submittedAt).toLocaleDateString('en-GB') : '—'}</td>
+        <td class="c-m">${new Date(r.a.absorbedAt).toLocaleDateString('en-GB')}</td>
+        <td class="c">${r.n.toLocaleString()}</td>
+        <td class="r"><b>${money(r.exp)}</b></td>
+        <td class="r"><button class="btn sm" onclick="dropCluster('${esc(r.a.cluster)}')" title="Remove this submission">✕</button></td>
+      </tr>`).join('') : `<tr><td colspan="8" class="empty">Nothing absorbed yet</td></tr>`)
+    + expected.filter(x => !got.has(x)).map(x => `<tr class="dim">
+        <td><b>${esc(x)}</b></td><td colspan="5" class="c-m">not submitted</td>
+        <td class="r c-m">—</td><td></td></tr>`).join('')
+    + `</tbody><tfoot><tr><td colspan="5">EMEA · ${got.size} of ${expected.length || got.size} clusters</td>
+        <td class="c">${sum(rows.map(r=>r.n)).toLocaleString()}</td>
+        <td class="r">${money(totalExp)}</td><td></td></tr></tfoot>`;
+
+  const rest = rows.map(r => ({ cl:r.a.cluster, st:restateCluster(r.a) })).filter(x => x.st);
+  $('tblRestate').innerHTML = `<thead><tr><th>Cluster</th><th class="c">Systems</th>
+      <th class="r">As submitted</th><th class="r">Restated on your settings</th>
+      <th class="r">Difference</th><th>What differed</th></tr></thead><tbody>`
+    + (rest.length ? rest.map(x => {
+        const d = x.st.ours - x.st.theirs;
+        return `<tr><td><b>${esc(x.cl)}</b></td><td class="c">${x.st.rows}</td>
+          <td class="r c-m">${money(x.st.theirs)}</td><td class="r"><b>${money(x.st.ours)}</b></td>
+          <td class="r ${Math.abs(d)<1?'c-m':d>0?'c-g':'c-r'}">${Math.abs(d)<1?'—':(d>0?'+':'−')+money(Math.abs(d))}</td>
+          <td class="c-m">${x.st.diff.length ? esc(x.st.diff.join(', ')) : 'nothing — same settings'}</td></tr>`;
+      }).join('') : `<tr><td colspan="6" class="empty">Nothing to restate yet</td></tr>`)
+    + `</tbody>`;
+
+  const bd = $('bdgConsol'); if (bd) bd.textContent = got.size || '';
+}
+
+function dropCluster(cl){
+  if (!confirm(`Remove ${cl}'s submission from the consolidation?\n\nThe other clusters are untouched.`)) return;
+  absorbRemove(cl); renderAll(); renderConsol(); toast(`${cl} removed`);
+}
+
 function renderNavSource(){
+  const nv = $('navVer');
+  if (nv) nv.textContent = 'v' + APP_VERSION;
   setTx('navSrc', S.file || '—');
   const rc = S.reclass;
   setHTML('navMeta',
@@ -3201,6 +3627,7 @@ function go(p){
   if (p==='ins')  renderIns();
   if (p==='dq')   renderDQ();
   if (p==='ver')  renderVer();
+  if (p==='consol') renderConsol();
 }
 
 function fillMonthSelects(){
@@ -3310,6 +3737,7 @@ function renderAll(){
     if (id==='ins')  renderIns();
     if (id==='dq')   renderDQ();
     if (id==='ver')  renderVer();
+    if (id==='consol') renderConsol();
   }
   renderRisks(); renderOpps(); renderTm(); renderAssums();
   ['tCtry','rCtry','oCtry'].forEach(fillCtrySel);
@@ -5182,10 +5610,24 @@ function aspStats(records){
            med: median(vals), p25: quantile(vals,0.25), p75: quantile(vals,0.75),
            min: vals.length?Math.min(...vals):0, max: vals.length?Math.max(...vals):0, vals };
 }
-/* every record allowed into the benchmark */
+/* Los registros que entran en el comparador.
+
+   Con un alcance puesto, S.rows es un cluster, así que comparar contra S.rows sería
+   comparar Iberia consigo misma: aspDecompose devolvería precio ≈ 0 y mezcla ≈ 0 y la
+   pantalla no diría nada. Es el peor fallo de los tres que había, porque la página sigue
+   funcionando y sigue mintiendo.
+
+   Como el archivo contiene toda EMEA, el comparador la usa entera — que además es lo que
+   hace útil esta pantalla: compararse con Europa, no consigo mismo. Lo que NO se enseña
+   bajo alcance es nada por cliente: la liga por país y su selector quedan ocultos, porque
+   ahí sí se verían cuentas de otros clusters una a una. Ver aspAggregateOnly(). */
+const aspFleet = () => (S._fleetRows && !S.consol) ? S._fleetRows : S.rows;
+/* Sin alcance, el comparador y la selección son la misma lista y no hay nada que hacer. */
+const aspAggregateOnly = () => !!userScope(currentUser()) && !S.consol;
+
 function aspBenchRows(){
   const list = S.st.aspCountries;
-  return S.rows.filter(r => !list || list.includes(r.country));
+  return aspFleet().filter(r => !list || list.includes(r.country));
 }
 
 /* The gap between two averages is either price or mix. Splitting it is the whole point:
@@ -5375,8 +5817,19 @@ function renderAsp(){
   if ($('aspBasis')) $('aspBasis').value = S.st.aspBasis;
 
   setTx('aspBenchLbl', aspBenchLabel(true));
-  renderAspPicker();
+  /* Bajo alcance, el comparador mira toda EMEA en agregado —ASP por plataforma y
+     cobertura— y nunca filas de cliente. Es lo que hace útil esta pantalla: compararse
+     con Europa y no consigo mismo. Lo que sí se oculta es todo lo que enumera clientes o
+     países uno a uno, que es donde se verían cuentas de otros clusters. */
+  const agg = aspAggregateOnly();
+  document.body.classList.toggle('asp-agg', agg);
+  if (!agg) renderAspPicker();
   const benchLbl = aspBenchLabel();
+  setHTML('aspAggNote', agg
+    ? `<div class="note i"><span class="ni2">◎</span><div>The comparison group is the
+        <b>whole EMEA fleet</b>, read as averages by platform and coverage — never as
+        individual contracts. The country league and its picker are hidden while a scope is
+        set, because those list accounts one by one.</div></div>` : '');
   setTx('aspScope', `${aspSelLabel()} · ${a.n} contracts, compared with ${benchLbl} · ${b.n} contracts` +
     (S.st.aspPlat ? ` · ${S.st.aspPlat} only` : ' · all platforms, paired with cover before comparing') +
     ` · ${ASP_BASIS_LBL[S.st.aspBasis] || 'direct contract value'} · ${S.cur}` +
@@ -6409,14 +6862,79 @@ function saveSettings(){
    ============================================================ */
 function stateBlob(withRows){
   const b = {
-    v:1, savedAt:new Date().toISOString(), file:S.file,
+    v:2, app:APP_VERSION, savedAt:new Date().toISOString(), file:S.file,
+    scope:scopeStamp(),
     cy:S.cy, cur:S.cur, st:S.st, tog:S.tog, map:S.map, hdr:S.hdr, fx:S.fx, reclass:S.reclass,
     dec:S.dec, risks:S.risks, opps:S.opps, tm:S.tm, assums:S.assums, eol:S.eol,
     versions:S.versions, log:S.log.slice(0,200)
   };
-  if (withRows) b.raw = S.raw;
+  if (withRows){
+    /* Un manager se lleva sus filas, no las 3.073. Se reindexa y se conserva el índice
+       original, para que las claves del plan sigan apuntando a los mismos equipos. */
+    const sc = userScope(currentUser());
+    if (sc && !S.consol){
+      const keep = new Set(S.rows.map(r => r._i));
+      b.raw = S.raw.filter((_, i) => keep.has(i));
+      b.rawIdx = S.raw.map((_, i) => i).filter(i => keep.has(i));
+    } else {
+      b.raw = S.raw;
+    }
+  }
   return b;
 }
+/* ============================================================
+   CONTINUIDAD
+
+   El autoguardado nunca guardó S.raw —2-3 MB frente a los ~5 MB de cuota que tiene
+   localStorage para todo—, así que volver al día siguiente exigía cargar otra vez los dos
+   Excel. Con nueve personas y un ciclo largo, ese es el paso que se olvida y la razón por
+   la que alguien pierde una tarde.
+
+   IndexedDB tiene cuota muy superior y guarda estructuras sin pasarlas a texto. El .json
+   sigue siendo el respaldo y lo único que viaja entre equipos; esto es de este navegador
+   y de este equipo, y la pantalla lo dice.
+   ============================================================ */
+const IDB_NAME = 'scbp', IDB_STORE = 'src';
+
+function idbOpen(){
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(new Error('sin IndexedDB'));
+    const q = indexedDB.open(IDB_NAME, 1);
+    q.onupgradeneeded = () => { if (!q.result.objectStoreNames.contains(IDB_STORE)) q.result.createObjectStore(IDB_STORE); };
+    q.onsuccess = () => res(q.result);
+    q.onerror   = () => rej(q.error);
+  });
+}
+function idbPut(key, val){
+  return idbOpen().then(db => new Promise((res, rej) => {
+    const t = db.transaction(IDB_STORE, 'readwrite');
+    t.objectStore(IDB_STORE).put(val, key);
+    t.oncomplete = () => res(true); t.onerror = () => rej(t.error);
+  })).catch(() => false);
+}
+function idbGet(key){
+  return idbOpen().then(db => new Promise((res, rej) => {
+    const r = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  })).catch(() => null);
+}
+function idbDel(key){
+  return idbOpen().then(db => new Promise(res => {
+    const t = db.transaction(IDB_STORE, 'readwrite');
+    t.objectStore(IDB_STORE).delete(key);
+    t.oncomplete = () => res(true); t.onerror = () => res(false);
+  })).catch(() => false);
+}
+
+/* Se guardan los datos de origen aparte del blob, y con poca frecuencia: no cambian
+   mientras se trabaja, solo al cargar un archivo. */
+function saveSource(){
+  if (!S.raw || !S.raw.length) return;
+  idbPut('raw', { raw:S.raw, hdr:S.hdr, map:S.map, file:S.file, sheets:S.sheets || null,
+                  reclass:S.reclass ? (S.reclass._full || S.reclass) : null,
+                  savedAt:new Date().toISOString() });
+}
+
 function autoSave(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(stateBlob(false)));
        const e=$('lsInfo'); if(e && e.dataset.dyn!=='0') e.innerHTML =
@@ -6432,6 +6950,10 @@ function applyBlob(b){
   if (b.hdr) S.hdr = b.hdr;
   if (b.fx) S.fx = b.fx;
   if (!S.st.fxOver) S.st.fxOver = {};
+  /* Un plan de la v1 lleva las claves con el índice de fila dentro. buildRecords lo
+     traducirá en cuanto tenga los datos delante. */
+  S._needKeyMigration = (b.v || 1) < 2;
+  S.blobScope = b.scope || null;
   /* Sessions saved before the ASP knew about platforms compared TotalAdvantage on an
      excimer with TotalAdvantage on a femtolaser and called it one number. Move them onto
      the paired grouping once, rather than leaving the old view as a silent default. */
@@ -6453,6 +6975,7 @@ function applyBlob(b){
 }
 (function checkSaved(){
   window.addEventListener('DOMContentLoaded', ()=>{
+    renderWhoami();
     updateSetup();
     try{
       const raw = localStorage.getItem(LS_KEY); if (!raw) return;
@@ -6461,21 +6984,43 @@ function applyBlob(b){
       if (!n) return;
       $('restoreBox').style.display = 'flex';
       setTx('restoreInfo', `${b.file||'unknown file'} · saved ${new Date(b.savedAt).toLocaleString('en-GB')} · ${(b.risks||[]).length} risks, ${(b.opps||[]).length} opportunities, ${Object.keys(b.dec||{}).length} decisions${b.reclass?' · Service Reclass included':''}`);
+      idbGet('raw').then(src => {
+        if (src && src.raw && src.raw.length)
+          setTx('restoreInfo', `${b.file||'unknown file'} · saved ${new Date(b.savedAt).toLocaleString('en-GB')} · `
+            + `${src.raw.length.toLocaleString()} records held in this browser — Restore opens straight into the plan`);
+      });
     }catch(e){}
   });
 })();
-function restoreSession(){
+async function restoreSession(){
   try{
     const b = JSON.parse(localStorage.getItem(LS_KEY));
     applyBlob(b);
     $('restoreBox').style.display='none';
+
+    /* Si los datos de origen están guardados, se vuelve donde se dejó sin pedir un solo
+       archivo. Es el paso que se olvidaba y por el que alguien perdía una tarde. */
+    const src = await idbGet('raw');
+    if (src && src.raw && src.raw.length){
+      S.raw = src.raw.map(r => r.map(c =>
+        (typeof c === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(c)) ? new Date(c) : c));
+      S.hdr = src.hdr || S.hdr; S.map = src.map || S.map;
+      S.file = src.file || S.file; S.sheets = src.sheets || S.sheets;
+      if (src.reclass && !S.reclass) S.reclass = src.reclass;
+      buildRecords(); buildFilters(); clearFilters(); buildSettingsUI(); renderNavSource();
+      startApp();
+      toast('Welcome back — picked up where you left off');
+      return;
+    }
+
     setHTML('loadMsg', `<div class="note s"><span class="ni2">✓</span><div>Decisions and registers restored. Now load <b>${esc(b.file||'the installed base file')}</b> to reconnect them to the data.</div></div>`);
     if (S.reclass) setHTML('rcMsg', reclassSummaryHTML());
     updateSetup();
     toast('Session restored — load the installed base file');
   }catch(e){ toast('Could not restore the saved session', true); }
 }
-function discardSession(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} $('restoreBox').style.display='none'; toast('Saved session discarded'); }
+function discardSession(){
+  idbDel('raw'); try{ localStorage.removeItem(LS_KEY); }catch(e){} $('restoreBox').style.display='none'; toast('Saved session discarded'); }
 function hardReset(){
   if (!confirm('Clear every decision, risk, opportunity, assumption and version from this browser?\n\nThis cannot be undone. Download the plan first if you want to keep it.')) return;
   try{ localStorage.removeItem(LS_KEY); }catch(e){}
@@ -6513,9 +7058,16 @@ const CAN_PICK_FOLDER = typeof window.showSaveFilePicker === 'function';
 const mmddyyyy = d => String(d.getMonth()+1).padStart(2,'0')
                     + String(d.getDate()).padStart(2,'0') + d.getFullYear();
 
-/* El alcance sale de lo que esté filtrado: un cluster, un país, o EMEA si no hay filtro.
-   Se limpia de lo que un nombre de archivo no admite. */
+/* El alcance del nombre sale de quien guarda, no de lo que tenga filtrado.
+
+   El filtro es transitorio —se mueve mientras se trabaja— y daría nombres distintos
+   según dónde estuviera el ratón al pulsar Guardar. El alcance del usuario no se mueve:
+   BP2027_Iberia_11152026.json es el mismo archivo lo mire por donde lo mire. Solo cuando
+   nadie se ha identificado se cae al filtro, que es mejor que no decir nada. */
 function planScope(){
+  if (S.consol) return 'EMEA';
+  const u = currentUser();
+  if (u) return String(scopeLabel(u)).replace(/[^\w&-]+/g, '') || 'EMEA';
   const f = S.filt || {};
   const cl = f.cluster && f.cluster.size ? [...f.cluster] : [];
   const co = f.country && f.country.size ? [...f.country] : [];
@@ -6552,6 +7104,227 @@ async function saveJson(name, obj, purpose){
   }
   download(name, text, 'application/json');
   return { how:'download', name };
+}
+
+/* ============================================================
+   CONSOLIDAR · el director va absorbiendo entregas según llegan
+
+   La duda que da origen a esto: si hoy absorbo Iberia y mañana llega Italia, ¿no me
+   machaca lo de ayer? Con el código de antes, sí: applyBlob reemplaza cada colección
+   entera (S.dec = b.dec, S.risks = b.risks…), así que la segunda entrega borraba la
+   primera.
+
+   No tiene por qué, porque las entregas NO SE SOLAPAN: Iberia solo decide sobre equipos
+   españoles y portugueses, Italia solo sobre italianos. Claves distintas. No es un
+   conflicto que resolver, es una suma — solo hay que sumar en vez de sustituir.
+
+   Y como habrá revisión, hay que poder deshacer una absorción concreta: cuando Iberia
+   mande la r2 corregida, se retira lo suyo y se mete lo nuevo sin tocar a los demás. Para
+   eso cada absorción anota exactamente qué entró.
+   ============================================================ */
+
+function consolInit(){
+  S.consol = S.consol || { cycle:`${S.cy.type}${S.cy.year}`, absorbed:[] };
+  return S.consol;
+}
+const absorbedOf = cl => (S.consol ? S.consol.absorbed.find(a => a.cluster === cl) : null);
+
+/* Lo que impide absorber, dicho con nombre y apellidos. */
+function absorbCheck(b){
+  const stop = [], warn = [];
+  const sub = b && b.submission;
+  if (!b || !b.dec) stop.push('This file does not look like a plan from this tool.');
+  if (!sub) warn.push('No submission stamp: it will be absorbed as a loose plan.');
+  const cyc = `${S.cy.type}${S.cy.year}`;
+  if (sub && sub.cycle && sub.cycle !== cyc)
+    stop.push(`It belongs to the ${sub.cycle} cycle and you are consolidating ${cyc}.`);
+
+  const cl = (sub && sub.cluster) || (b.scope && b.scope.label) || 'desconocido';
+  const mine = new Set((sub && sub.countries) || (b.scope && b.scope.countries) || []);
+  (S.consol.absorbed || []).forEach(a => {
+    if (a.cluster === cl) return;                      // ese es el caso de la revisión
+    const clash = (a.countries || []).filter(c => mine.has(c));
+    if (clash.length) stop.push(`It overlaps ${a.cluster} in ${clash.join(', ')}.`);
+  });
+
+  /* Las columnas: applyMapping deja remapear, y buildRecords tiene un solo S.map global.
+     Si un cluster remapeó el valor anual, al fusionar se leería la columna equivocada
+     para sus filas. Lo correcto es rechazar esa entrega, no apañarla. */
+  if (b.map && S.map){
+    const dif = Object.keys(S.map).filter(k => b.map[k] !== undefined && b.map[k] !== S.map[k]);
+    if (dif.length) stop.push(`${cl} remapped ${dif.join(', ')}: their rows would be read from a different column.`);
+  }
+
+  const dup = Object.keys(b.dec || {}).filter(k => {
+    const o = (S.consol.absorbed || []).find(a => a.cluster !== cl && (a.decKeys || []).includes(k));
+    return !!o;
+  });
+  if (dup.length) stop.push(`${dup.length} decision${dup.length===1?'':'s'} already came from another cluster.`);
+
+  const orphan = Object.keys(b.dec || {}).filter(k => !S.rows.some(r => r._key === k));
+  if (orphan.length) warn.push(`${orphan.length} decision${orphan.length===1?'':'s'} match no system here: that submission was made on a different extract.`);
+
+  return { stop, warn, cluster:cl, countries:[...mine], revision:(sub && sub.revision) || 1,
+           by:(sub && sub.user) || (b.st && b.st.by) || '', email:(sub && sub.email) || '',
+           submittedAt:(sub && sub.submittedAt) || b.savedAt };
+}
+
+/* Quitar lo que aportó un cluster. Es lo que permite sustituir una entrega revisada sin
+   rehacer la consolidación entera. */
+function absorbRemove(cluster){
+  const a = absorbedOf(cluster);
+  if (!a) return false;
+  (a.decKeys || []).forEach(k => { delete S.dec[k]; });
+  const ids = new Set(a.regIds || []);
+  S.risks = S.risks.filter(e => !ids.has(e.id));
+  S.opps  = S.opps .filter(e => !ids.has(e.id));
+  S.tm    = S.tm   .filter(e => !ids.has(e.id));
+  S.assums= S.assums.filter(e => !ids.has(e.id));
+  const vids = new Set(a.versionIds || []);
+  S.versions = S.versions.filter(v => !vids.has(v.id));
+  S.consol.absorbed = S.consol.absorbed.filter(x => x.cluster !== cluster);
+  logIt('Submission withdrawn', cluster);
+  return true;
+}
+
+function absorb(b, opt){
+  consolInit();
+  const c = absorbCheck(b);
+  if (c.stop.length && !(opt && opt.force)) return { ok:false, ...c };
+
+  const prev = absorbedOf(c.cluster);
+  if (prev && !(opt && opt.replace)) return { ok:false, ...c, already:prev };
+  if (prev) absorbRemove(c.cluster);
+
+  const slug = c.cluster.toLowerCase().replace(/[^a-z0-9]+/g,'');
+  const decKeys = [], regIds = [], versionIds = [];
+
+  /* Decisiones: se suman a las que ya hay. Seguro, porque el chequeo probó que no pisan. */
+  Object.entries(b.dec || {}).forEach(([k,v]) => {
+    if (!v || !v.touched) return;              // las no tocadas las siembra applyDefaults
+    S.dec[k] = v; decKeys.push(k);
+  });
+
+  /* Registros: los ids son 'R'+Date.now() y COLISIONAN entre managers — y delRisk y
+     editRisk resuelven por igualdad de cadena, así que una colisión borraría la entrada
+     equivocada. Se prefijan por cluster y se marca de dónde vienen. */
+  const take = (src, dst) => (src || []).forEach(e => {
+    const id = slug + ':' + e.id;
+    dst.push(Object.assign({}, e, { id, _src:{ cluster:c.cluster, by:c.by, at:c.submittedAt } }));
+    regIds.push(id);
+  });
+  take(b.risks, S.risks); take(b.opps, S.opps); take(b.tm, S.tm);
+
+  /* Supuestos: se unen sin duplicar el mismo texto. */
+  const seen = new Set(S.assums.map(a => String(a.txt||'').trim().toLowerCase()));
+  (b.assums || []).forEach(e => {
+    const k = String(e.txt||'').trim().toLowerCase();
+    if (seen.has(k)) return;
+    seen.add(k);
+    const id = slug + ':' + e.id;
+    S.assums.push(Object.assign({}, e, { id, _src:{ cluster:c.cluster } })); regIds.push(id);
+  });
+
+  /* EOL: si el mismo caso viene en dos entregas, concatenar lo aplicaría dos veces a los
+     mismos equipos y eolTotal contaría doble. */
+  const eolKey = e => [e.platform, (e.models||[]).slice().sort().join(','), e.mon, e.yr, e.share].join('|');
+  const haveEol = new Set(S.eol.map(eolKey));
+  (b.eol || []).forEach(e => { if (!haveEol.has(eolKey(e))){ haveEol.add(eolKey(e)); S.eol.push(e); } });
+
+  /* Versiones: unión, no reemplazo — applyBlob las sustituía. */
+  (b.versions || []).forEach(v => {
+    const id = slug + ':' + v.id;
+    S.versions.push(Object.assign({}, v, { id, _src:{ cluster:c.cluster, by:c.by } }));
+    versionIds.push(id);
+  });
+
+  S.consol.absorbed.push({
+    cluster:c.cluster, countries:c.countries, by:c.by, email:c.email,
+    submittedAt:c.submittedAt, absorbedAt:new Date().toISOString(),
+    revision:c.revision, decKeys, regIds, versionIds,
+    st:b.st || null, tog:b.tog || null, cur:b.cur || S.cur,
+    reported:(b.submission && b.submission.rows) || null
+  });
+  S.consol.absorbed.sort((x,y) => x.cluster.localeCompare(y.cluster));
+
+  logIt('Submission absorbed', `${c.cluster} · r${c.revision} · ${decKeys.length} decisions`);
+  return { ok:true, ...c, decisions:decKeys.length, registers:regIds.length, warn:c.warn };
+}
+
+/* Lo que cada cluster entregó, recalculado con los ajustes del director.
+   engine() lee S.st y S.tog globalmente, así que se salva y se restaura alrededor. Es la
+   tabla que evita la discusión de «a mí me salía otra cifra». */
+function restateCluster(a){
+  const rows = S.rows.filter(r => (a.countries || []).includes(r.country));
+  if (!rows.length) return null;
+  const st = S.st, tog = S.tog;
+  let theirs = null;
+  try {
+    if (a.st){ S.st = Object.assign({}, st, a.st); S.tog = Object.assign({}, tog, a.tog || {}); applyFx(); }
+    theirs = engine(rows, { risk:1, opp:1 });
+  } finally { S.st = st; S.tog = tog; applyFx(); }
+  const ours = engine(rows, { risk:1, opp:1 });
+  const keys = ['basis','expM','pDue','pOver','inclBundle','bundleTiming','covTarget'];
+  const diff = a.st ? keys.filter(k => JSON.stringify(a.st[k]) !== JSON.stringify(S.st[k])) : [];
+  return { rows:rows.length, theirs:theirs.expected, ours:ours.expected, diff };
+}
+
+/* ============================================================
+   ENTREGAR AL DIRECTOR
+
+   Una entrega no lleva datos: lleva DECISIONES. Todos parten del mismo archivo con las
+   mismas 3.073 filas, así que el director ya tiene los equipos y absorber una entrega es
+   pegarle decisiones a equipos que ya están ahí. Son ~300 KB en vez de 2-3 MB, y hace la
+   consolidación una suma en vez de una fusión.
+   ============================================================ */
+
+/* Una entrada sin país ni equipo se aplica ENTERA dentro del alcance de quien la escribe
+   —engine() la considera del conjunto completo— así que al consolidar se aplicaría a
+   EMEA entera. Se frena aquí, que es donde se puede explicar. */
+function submissionBlockers(){
+  const out = [];
+  const check = (list, what) => list.filter(e => !e.key && !e.country)
+    .forEach(e => out.push(`${what}: ${e.cust || e.desc || '(sin nombre)'}`));
+  check(S.risks, 'Riesgo'); check(S.opps, 'Oportunidad'); check(S.tm, 'T&M');
+  return out;
+}
+
+function exportSubmission(){
+  const u = currentUser();
+  if (!u) return toast('Pick who you are first — a submission has to say whose it is', true);
+  const bad = submissionBlockers();
+  if (bad.length) return toast(
+    `${bad.length} register ${bad.length===1?'entry has':'entries have'} no country and no system, so `
+    + `${bad.length===1?'it':'they'} would apply to the whole of EMEA when consolidated. `
+    + `Give ${bad.length===1?'it':'them'} a country first: ${bad.slice(0,3).join(' · ')}`, true);
+
+  const rev = (S.st.subRev || 0) + 1;
+  const b = stateBlob(false);                      // sin raw: el director ya tiene los datos
+  b.submission = {
+    user:u.name, email:u.email, role:u.role,
+    cluster:scopeLabel(u), countries:[...(userScope(u) || [])],
+    cycle:`${S.cy.type}${S.cy.year}`, revision:rev,
+    submittedAt:new Date().toISOString(), app:APP_VERSION,
+    rows:S.rows.length, decisions:Object.values(S.dec).filter(d=>d.touched).length,
+    risks:S.risks.length, opps:S.opps.length, tm:S.tm.length
+  };
+  const name = planName('json', rev > 1 ? 'r'+rev : null);
+  saveJson(name, b, 'submission').then(r => {
+    if (r.how === 'cancelled') return;
+    S.st.subRev = rev; saveSettings();
+    /* Congelar lo entregado, para que los cambios posteriores se vean contra ello. */
+    S.versions.unshift({ id:'V'+Date.now(), lbl:`Submitted r${rev}`,
+      note:`${scopeLabel(u)} · ${u.name}`, ts:new Date().toISOString(),
+      cur:S.cur, cycle:`${S.cy.type}${S.cy.year}`, submitted:true,
+      base:scenarios(dashRows()).baseline.B, loss:scenarios(dashRows()).expected.L,
+      opp:scenarios(dashRows()).expected.O, exp:scenarios(dashRows()).expected.expected,
+      dn:scenarios(dashRows()).downside.expected, up:scenarios(dashRows()).upside.expected,
+      eolLoss:scenarios(dashRows()).eolLoss||0, eolCases:S.eol.length,
+      tog:Object.assign({}, S.tog), risks:S.risks.length, opps:S.opps.length, records:S.rows.length });
+    logIt('Submitted', `${scopeLabel(u)} · r${rev} · ${r.name || name}`);
+    renderAll();
+    toast(`Submitted as ${r.name || name} — revision ${rev}, and frozen as a version`);
+  });
 }
 
 function savePlanFile(){
