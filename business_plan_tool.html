@@ -152,6 +152,7 @@ html[data-theme="dark"]{--jjmark:#fff}
 .xg .btn:last-child{border-top-right-radius:var(--rs);border-bottom-right-radius:var(--rs);
   border-left:0;color:var(--mut);font-weight:600}
 .xg .btn:last-child:hover{color:var(--tx)}
+.regi .rvs2{display:block;font-size:.68rem;color:var(--mut);margin-top:1px}
 /* Alcance puesto: el comparador sigue siendo toda EMEA, pero solo en agregado. Fuera
    todo lo que enumera países o clientes uno a uno. */
 body.asp-agg #aspCtryCard,
@@ -1079,7 +1080,7 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
       </div>
       <div class="card">
         <div class="card-h"><h3>Risk register</h3>
-          <div class="r"><span class="sub">Gross exposure <b id="rGross" class="c-o">—</b></span><span class="sub">·</span><span class="sub">Weighted <b id="rWtd" class="c-r">—</b></span></div>
+          <div class="r"><span class="sub">Annual value <b id="rGross" class="c-o">—</b></span><span class="sub">·</span><span class="sub">Exposed in <span id="rYrLbl">the BP year</span> <b id="rInYr" class="c-o">—</b></span><span class="sub">·</span><span class="sub">Weighted <b id="rWtd" class="c-r">—</b></span></div>
         </div>
         <div class="card-b" id="riskList"></div>
       </div>
@@ -3055,9 +3056,15 @@ function dropAutoOpp(r){
   return e ? 'kept' : null;
 }
 
+/* Lo que este equipo pone en juego al año, sea quien sea quien lo pague. */
+const valorEnJuego = r => (r._usd || 0) + (r.bundleUsd || 0);
+
 function syncRiskFromRecord(r, why){
   const d = decOf(r);
   if (d.st !== 'risk') return null;
+  /* Sin ingreso no hay riesgo económico que registrar. Se devuelve el motivo
+     para que quien llama lo pueda explicar en vez de callarse. */
+  if (valorEnJuego(r) <= 0 && !linkedRisk(r)) return 'sin-valor';
   const lossProb = clamp(100 - (d.prob ?? 100), 0, 100);
   const { mon, yr } = eventPoint(r);
   let e = linkedRisk(r);
@@ -4434,7 +4441,10 @@ function setDec(key, field, val){
   /* an at-risk system belongs in the register; anything else takes its entry away again */
   let raised = null, kept = false, dropped = false, upped = null;
   if (r){
-    if (d.st === 'risk') raised = syncRiskFromRecord(r);
+    if (d.st === 'risk'){
+      const res = syncRiskFromRecord(r);
+      raised = res;                       // objeto, o 'sin-valor', o null
+    }
     else if (field === 'st'){ const res = dropAutoRisk(r); kept = res === 'kept'; dropped = res === 'dropped'; }
     if (d.st === 'upgrade') upped = syncOppFromRecord(r);
     else if (field === 'st') dropAutoOpp(r);
@@ -4458,8 +4468,15 @@ function setDec(key, field, val){
       toast(lost > 0
         ? `${r.account} · ${money(lost)} taken off ${S.cy.year}`
         : `${r.account} marked ${val} · no ${S.cy.year} impact, the event month falls outside the year`);
+    } else if (val === 'risk' && raised === 'sin-valor'){
+      toast(`${r.account} · ${r.serial} marked at risk, but it carries no revenue — `
+          + `no direct contract and nothing reclassed — so there is nothing to put in the register.`, true);
     } else if (val === 'risk' && raised){
-      toast(`${r.account} added to the risk register at ${raised.prob}% — open it to add evidence and an owner`);
+      const w = sum(eventMonths(raised, 1, 'risk'));
+      toast(w > 0
+        ? `${r.account} added to the risk register · ${money(w)} off ${S.cy.year} at ${raised.prob}% — open it to add evidence and an owner`
+        : `${r.account} added to the risk register at ${raised.prob}%, but the event falls in `
+          + `${MON3[raised.mon-1]} ${raised.yr} — nothing comes off ${S.cy.year}. Move the event month if you expect it sooner.`);
     } else if (kept){
       toast(`${r.account} is no longer at risk, but its risk register entry was edited by hand and has been kept`);
     } else if (val === 'upgrade' && upped){
@@ -4711,8 +4728,13 @@ function renderRisks(){
   renderImpact('risk');
   const rate = S.cur==='USD'?1:fxRate(S.cur);
   const gross = sum(S.risks, e=>e.usd*rate);
+  /* Lo que de verdad está expuesto este año: el valor anual recortado a los
+     meses que caen dentro, sin aplicar probabilidad. Es lo que «expuesto»
+     significa, y de una entrada fechada en 2027 son cero. */
+  const enElAnio = sum(S.risks, e => e.usd*rate * monthsAffected(e.mon, e.yr) / 12);
   const wtd   = sum(S.risks, e=>sum(eventMonths(e,1,'risk')));
-  setTx('rGross', money(gross)); setTx('rWtd', money(wtd));
+  setTx('rGross', money(gross)); setTx('rInYr', money(enElAnio)); setTx('rWtd', money(wtd));
+  setTx('rYrLbl', String(S.cy.year));
   const list = $('riskList');
   syncFormMode('risk');
   if (!S.risks.length){ list.innerHTML = `<div class="empty">No risks logged. Search a system above, or add a free-standing risk.</div>`; return; }
@@ -4727,13 +4749,15 @@ function renderRisks(){
       <div class="rd">${esc(e.desc)}</div>
       <div class="rmeta">
         <span>Event <b>${MON3[e.mon-1]} ${e.yr}</b></span>
-        <span>${m>0?`<b>${m}</b> months in ${S.cy.year}`:`<b>no impact</b> in ${S.cy.year}`}</span>
+        <span>${m>0?`<b>${m}</b> month${m===1?'':'s'} in ${S.cy.year}`:`<b>no impact</b> in ${S.cy.year}`}</span>
         ${e.evid?`<span>Evidence: <b>${esc(e.evid)}</b></span>`:''}
         ${e.mit?`<span>Mitigation: <b>${esc(e.mit)}</b></span>`:''}
         ${e.own?`<span>Owner: <b>${esc(e.own)}</b></span>`:''}
         ${e.rev?`<span>Reviewed <b>${esc(e.rev)}</b></span>`:''}
       </div></div>
-      <div class="rr"><div class="rv c-r">-${money(w)}</div><div class="rvs">of ${money(e.usd*rate)} exposed</div>
+      <div class="rr"><div class="rv c-r">-${money(w)}</div><div class="rvs">${
+        m > 0 ? `of ${money(e.usd*rate*m/12)} exposed in ${S.cy.year}` : `nothing exposed in ${S.cy.year}`
+      }<span class="rvs2">${money(e.usd*rate)} a year</span></div>
         <div class="ra"><button class="btn sm" onclick="editRisk('${e.id}')">✎ Edit</button>
           <button class="btn sm dng" onclick="delRisk('${e.id}')">Remove</button></div></div></div>`;
   }).join('');

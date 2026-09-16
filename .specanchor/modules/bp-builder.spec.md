@@ -111,6 +111,25 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   guardar esa hoja como `.csv`. Tres órdenes de magnitud, y el formato ya está
   soportado.
 
+## El registro de riesgos, al marcar desde la lista de equipos
+
+- **C-RISK-001.** Marcar *At risk* un equipo **sin ingreso** —ni contrato
+  directo ni valor reclasificado— **no crea entrada**. Una fila de $0 expuestos
+  y $0 ponderados no es un riesgo, y hay 1.967 equipos así de 3.073: dos de cada
+  tres filas de la tabla. La decisión se conserva en el equipo; lo que no se
+  crea es la fila vacía.
+- **C-RISK-002.** «Expuesto» significa **expuesto en el año del BP**: el valor
+  anual recortado a los meses que caen dentro, sin probabilidad. El valor anual
+  se enseña aparte y con su nombre. Antes la cabecera decía «Gross exposure
+  $57.679» junto a «Weighted $0» de una entrada fechada en 2027, que se
+  contradice.
+- **C-RISK-003.** El aviso al marcar dice lo que pasa: cuánto sale del año, o
+  por qué no sale nada —fecha fuera del año, o equipo sin ingreso—.
+- **C-RISK-004.** Lo que **no** se hace: mover la fecha del evento dentro del
+  año para que siempre descuente. Sería inventar una pérdida en un año en que el
+  contrato sigue vivo. Quien espere que el cliente se vaya antes cambia la fecha
+  a mano.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

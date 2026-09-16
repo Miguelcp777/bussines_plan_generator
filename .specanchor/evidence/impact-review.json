@@ -1,6 +1,6 @@
 {
-  "revision": "c593c907ad265e019fad616c2ecbc03f58c884e8",
-  "task_spec": ".specanchor/tasks/TASK-003.spec.md",
+  "revision": "eb6883a1d966fceebaf1d4071557c39c513427d1",
+  "task_spec": ".specanchor/tasks/TASK-004.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,67 +8,74 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "Anade un contrato de rendimiento (C-PERF-001 a 003): leer solo la hoja usada, avisar antes de bloquear y ofrecer la salida por CSV. No cambia formatos de entrada, mapeo de columnas ni cifras: las nueve medidas salen identicas antes y despues.",
+      "rationale": "Nuevos contratos C-RISK-001 a 004: un equipo sin ingreso no crea entrada automatica, 'expuesto' pasa a significar expuesto en el anio del BP, y el aviso al marcar dice si descuenta o por que no. El motor no se toca y las cifras del plan salen identicas.",
       "evidence": [
-        ".specanchor/tasks/TASK-003.spec.md"
+        ".specanchor/tasks/TASK-004.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Nueva seccion de rendimiento con los tres contratos y la tabla de tiempos medidos.",
+      "rationale": "Seccion nueva con los cuatro contratos del registro de riesgos al marcar desde la lista de equipos.",
       "evidence": [
-        ".specanchor/tasks/TASK-003.spec.md"
+        ".specanchor/tasks/TASK-004.spec.md"
       ]
     },
     {
-      "path": ".specanchor/global/arquitectura.spec.md",
-      "kind": "clarification",
-      "specs": [],
-      "rationale": "Registra el coste real de leer una hoja de calculo y cierra U-ARQ-003. No cambia ninguna restriccion; documenta que el coste escala con el numero de hojas, no con los megas.",
-      "evidence": [
-        ".specanchor/tasks/TASK-003.spec.md"
-      ]
-    },
-    {
-      "path": ".specanchor/tasks/TASK-003.spec.md",
+      "path": ".specanchor/tasks/TASK-004.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea de este cambio, con su trazabilidad y evidencia.",
+      "rationale": "La tarea de este cambio, con la investigacion previa y la evidencia de los cinco criterios.",
       "evidence": [
-        ".specanchor/tasks/TASK-003.spec.md"
+        ".specanchor/tasks/TASK-004.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/findings/0002-plurales-de-meses.md",
+      "kind": "clarification",
+      "specs": [],
+      "rationale": "Hallazgo fuera de alcance: el mismo fallo de plural queda en cuatro lineas de Oportunidades y T&M, sin tocar, para no ensanchar el diff.",
+      "evidence": [
+        ".specanchor/tasks/TASK-004.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-003/REQ-001",
-      "acceptance": "TASK-003/AC-001",
-      "verification": "Cronometrar la lectura del .xlsb real antes y despues",
+      "requirement": "TASK-004/REQ-001",
+      "acceptance": "TASK-004/AC-001",
+      "verification": "Marcar un equipo uncovered y contar S.risks",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-003.spec.md"
+      "evidence": ".specanchor/tasks/TASK-004.spec.md"
     },
     {
-      "requirement": "TASK-003/REQ-002",
-      "acceptance": "TASK-003/AC-002",
-      "verification": "Contador de requestAnimationFrame y lectura del DOM dentro de leerHoja",
+      "requirement": "TASK-004/REQ-001",
+      "acceptance": "TASK-004/AC-002",
+      "verification": "Marcar un equipo con ingreso dentro y fuera del anio",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-003.spec.md"
+      "evidence": ".specanchor/tasks/TASK-004.spec.md"
     },
     {
-      "requirement": "TASK-003/REQ-003",
-      "acceptance": "TASK-003/AC-004",
-      "verification": "Cargar el .xls y la hoja DB como .csv",
+      "requirement": "TASK-004/REQ-002",
+      "acceptance": "TASK-004/AC-003",
+      "verification": "Leer cabecera y filas del registro",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-003.spec.md"
+      "evidence": ".specanchor/tasks/TASK-004.spec.md"
     },
     {
-      "requirement": "TASK-003/REQ-004",
-      "acceptance": "TASK-003/AC-003",
-      "verification": "Comparar las nueve cifras con las de antes del cambio",
+      "requirement": "TASK-004/REQ-003",
+      "acceptance": "TASK-004/AC-004",
+      "verification": "Interceptar toast() en los tres casos",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-003.spec.md"
+      "evidence": ".specanchor/tasks/TASK-004.spec.md"
+    },
+    {
+      "requirement": "TASK-004/REQ-004",
+      "acceptance": "TASK-004/AC-005",
+      "verification": "Comparar cifras con los archivos reales",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-004.spec.md"
     }
   ]
 }
