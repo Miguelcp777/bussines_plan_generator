@@ -93,6 +93,16 @@ una página, que es la causa medida del solape. **No he generado un PDF ni lo he
 mirado** — desde aquí no puedo abrir el diálogo de impresión del navegador. La
 confirmación final es abrir la vista previa.
 
+## Corrección posterior
+
+**Esto no arregló lo que Miguel veía.** Él respondió «no, sigue igual», y tenía
+razón: la causa real era que la propia aplicación se imprimía encima del
+informe. Está en `TASK-009`, encontrada generando el PDF en vez de razonar sobre
+el CSS.
+
+Lo de aquí sigue siendo correcto —una sección de 2.411 px no puede pedir no
+partirse— pero se cerró afirmando que resolvía el síntoma, y no lo hacía.
+
 ## Revisión final
 
 - **Cobertura documental:** PASS

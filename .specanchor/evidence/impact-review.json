@@ -1,6 +1,6 @@
 {
-  "revision": "51f71e323b011249cfb16e76f093660841dd6225",
-  "task_spec": ".specanchor/tasks/TASK-008.spec.md",
+  "revision": "7f62ca2857a9bce0f3fdca41724c3812abd169ce",
+  "task_spec": ".specanchor/tasks/TASK-009.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,58 +8,60 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-PRINT-001 y 002: en papel solo pide no partirse lo que cabe en una pagina. La seccion entera pedia no partirse midiendo hasta 2.411 px contra ~1.017 de pagina, y el navegador la desbordaba encima de lo siguiente. Las tablas largas repiten cabecera. El informe en pantalla mide lo mismo: 11.426 px antes y despues.",
+      "rationale": "C-PRINT-003: con el informe abierto se oculta el armazon de la app al imprimir, que era lo que se dibujaba encima. C-PRINT-004: el pie pasa a bottom:0 porque un bottom negativo lo mandaba arriba, encima del rotulo de seccion. Verificado generando el PDF.",
       "evidence": [
-        ".specanchor/tasks/TASK-008.spec.md"
+        ".specanchor/tasks/TASK-009.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Dos contratos nuevos de impresion, con las alturas medidas.",
+      "rationale": "Tres contratos de impresion, incluido como se verifica.",
       "evidence": [
-        ".specanchor/tasks/TASK-008.spec.md"
+        ".specanchor/tasks/TASK-009.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/tasks/TASK-009.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "La tarea, con la evidencia del PDF antes y despues.",
+      "evidence": [
+        ".specanchor/tasks/TASK-009.spec.md"
       ]
     },
     {
       "path": ".specanchor/tasks/TASK-008.spec.md",
-      "kind": "requirement",
+      "kind": "correction",
       "specs": [],
-      "rationale": "La tarea, con las alturas de las trece secciones y el limite de lo comprobado.",
+      "rationale": "TASK-008 se cerro afirmando que resolvia el solape y no lo hacia. Se anota la correccion y el puntero a TASK-009, sin borrar lo que si era correcto.",
       "evidence": [
-        ".specanchor/tasks/TASK-008.spec.md"
+        ".specanchor/tasks/TASK-009.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-008/REQ-001",
-      "acceptance": "TASK-008/AC-001",
-      "verification": "Medir todo elemento con break-inside:avoid en impresion",
+      "requirement": "TASK-009/REQ-001",
+      "acceptance": "TASK-009/AC-001",
+      "verification": "Buscar marcas del armazon en el PDF generado",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-008.spec.md"
+      "evidence": ".specanchor/tasks/TASK-009.spec.md"
     },
     {
-      "requirement": "TASK-008/REQ-002",
-      "acceptance": "TASK-008/AC-002",
-      "verification": "Recorrer las reglas de @media print",
+      "requirement": "TASK-009/REQ-002",
+      "acceptance": "TASK-009/AC-002",
+      "verification": "Posicion del pie en las doce paginas",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-008.spec.md"
+      "evidence": ".specanchor/tasks/TASK-009.spec.md"
     },
     {
-      "requirement": "TASK-008/REQ-003",
-      "acceptance": "TASK-008/AC-003",
-      "verification": "Regla table-header-group presente",
+      "requirement": "TASK-009/REQ-003",
+      "acceptance": "TASK-009/AC-003",
+      "verification": "Renderizar paginas a imagen y mirarlas",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-008.spec.md"
-    },
-    {
-      "requirement": "TASK-008/REQ-005",
-      "acceptance": "TASK-008/AC-004",
-      "verification": "Altura del informe en pantalla, version anterior contra esta",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-008.spec.md"
+      "evidence": ".specanchor/tasks/TASK-009.spec.md"
     }
   ]
 }

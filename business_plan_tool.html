@@ -704,6 +704,14 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
 @media print{
   body{background:#fff}
   .rpt-bar{display:none!important}
+  /* Con el informe abierto, lo único que se imprime es el informe.
+     `#rptOvl` es `position:fixed` y tapa la aplicación en pantalla, pero en papel
+     pasa a `static` y entonces FLUYE junto al resto del documento: la pantalla de
+     inicio y el armazón de la app se imprimían también, encima del informe. Eso
+     era el solape — no la paginación de las secciones. */
+  body.rpt-open #setup,
+  body.rpt-open #app,
+  body.rpt-open #toast{display:none!important}
   #rptOvl{position:static;background:#fff;overflow:visible}
   .doc{max-width:none;margin:0;box-shadow:none}
   /* Lo que se mantiene junto es lo que CABE en una página: una tarjeta, un
@@ -721,7 +729,11 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
   .cov{page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{margin:14mm 14mm 21mm}
 
-  .prfoot{display:flex!important;position:fixed;left:0;right:0;bottom:-14mm;height:10mm;
+  /* `bottom:-14mm` pretendía meterlo en el margen inferior, y lo que hace Chrome
+     con un `bottom` negativo en un elemento fijo de medio paginado es mandarlo
+     ARRIBA: medido, y=61 pt de 792 en las doce páginas, encima del título de
+     sección. Con `bottom:0` cae en y=717, que es donde tiene que estar. */
+  .prfoot{display:flex!important;position:fixed;left:0;right:0;bottom:0;height:10mm;
     align-items:center;gap:9px;padding-top:5px;border-top:1px solid #e2e6ec;
     font:400 8.5px/1.35 -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#8a939f;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -8452,11 +8464,13 @@ function openReport(){
   });
 
   $('rptOvl').classList.add('on');
+  document.body.classList.add('rpt-open');      // lo lee @media print
   document.body.style.overflow='hidden';
   setTimeout(()=>reportCharts(sc, byCluster, byPlat), 60);
   logIt('Report generated', `${S.cy.type}${S.cy.year} · ${scopeTxt}`);
 }
-function closeReport(){ $('rptOvl').classList.remove('on'); document.body.style.overflow=''; }
+function closeReport(){ $('rptOvl').classList.remove('on'); document.body.classList.remove('rpt-open');
+  document.body.style.overflow=''; }
 
 function reportCharts(sc, byCluster, byPlat){
   if (typeof Chart === 'undefined') return;

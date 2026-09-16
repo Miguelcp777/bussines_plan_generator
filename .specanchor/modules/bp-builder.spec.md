@@ -171,6 +171,20 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   (`table-header-group` / `table-footer-group`), y un encabezado de sección no
   se queda solo al final de una página.
 
+- **C-PRINT-003.** Con el informe abierto (`body.rpt-open`), en papel se oculta
+  **todo lo demás**: `#setup`, `#app` y los avisos. `#rptOvl` es `fixed` y tapa
+  la aplicación en pantalla, pero al imprimir pasa a `static` y fluye con el
+  resto del documento — la pantalla de inicio y la barra se imprimían encima del
+  informe. **Esa era la causa del solape**, medida generando el PDF, no la
+  paginación de las secciones.
+- **C-PRINT-004.** El pie de página va con `bottom:0`. Un `bottom` negativo en
+  un elemento fijo de medio paginado lo manda **arriba**: medido, `y=61` de 792
+  en las doce páginas, encima del rótulo de sección.
+- **C-PRINT-005.** Lo de impresión se verifica **generando el PDF y mirándolo**.
+  Comprobar reglas de CSS no vale: TASK-008 dio una invariante por buena y el
+  síntoma seguía. Un detector de solapes por rectángulos de texto marca falsos
+  positivos en las cabeceras de tabla; la imagen renderizada manda.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado
