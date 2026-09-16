@@ -655,7 +655,11 @@ details.dqx[open] .chev{transform:rotate(90deg)}
 .cov .cml{font-size:.66rem;text-transform:uppercase;letter-spacing:1.1px;opacity:.62;color:#fff}
 .cov .cmv{font-size:.94rem;font-weight:700;margin-top:3px;color:#fff}
 .rb{padding:34px 56px 52px}
-.rs{margin-bottom:34px;page-break-inside:avoid}
+/* Una sección NO pide no partirse: cuatro de las trece son más altas que una
+   página —el resumen 1.431 px, los contratos a renovar 2.411— y un bloque no
+   partible que no cabe lo desborda el navegador encima de lo que sigue. Lo que
+   sí se mantiene junto son las piezas pequeñas, abajo en @media print. */
+.rs{margin-bottom:34px}
 .rs .tag{display:inline-block;font-size:.63rem;letter-spacing:1.5px;text-transform:uppercase;
      background:#c8102e;color:#fff;padding:2px 9px;border-radius:3px;font-weight:700;margin-bottom:8px}
 .rs.annex .tag{background:#4a5563}
@@ -702,7 +706,18 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
   .rpt-bar{display:none!important}
   #rptOvl{position:static;background:#fff;overflow:visible}
   .doc{max-width:none;margin:0;box-shadow:none}
-  .rs{page-break-inside:avoid}
+  /* Lo que se mantiene junto es lo que CABE en una página: una tarjeta, un
+     gráfico con su título, una cita, una fila. La sección entera no — ver .rs.
+     Medido con un plan real: el resumen ejecutivo mide 1.431 px y una A4 con
+     estos márgenes da para ~1.017. */
+  .rk .k, .rc .rcw, .rq, .rhero{break-inside:avoid; page-break-inside:avoid}
+  table.rt tr{break-inside:avoid; page-break-inside:avoid}
+  /* Una tabla de 38 filas partida sin cabecera es ilegible. */
+  table.rt thead{display:table-header-group}
+  table.rt tfoot{display:table-footer-group}
+  /* Un encabezado solo al pie de una página no dice nada de lo que sigue. */
+  .rs h2, .rs h3{break-after:avoid; page-break-after:avoid}
+  .rs p, .rs li{orphans:3; widows:3}
   .cov{page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{margin:14mm 14mm 21mm}
 

@@ -161,6 +161,16 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   dice, distinguiendo las tres razones: importe 0, probabilidad 0, o fecha fuera
   del año. Mandar a corregir el campo que no es cuesta lo mismo que el fallo.
 
+- **C-PRINT-001.** En papel, **solo pide no partirse lo que cabe en una
+  página**: tarjetas, gráficos con su título, citas y filas de tabla — medido,
+  ninguno pasa de 239 px contra los ~1.017 de una A4 con estos márgenes. Una
+  sección entera **no**: cuatro de las trece miden entre 1.026 y 2.411 px, y un
+  bloque no partible que no cabe lo desborda el navegador encima de lo que
+  sigue. Eso era el solape del informe.
+- **C-PRINT-002.** Una tabla que se parte repite cabecera y pie
+  (`table-header-group` / `table-footer-group`), y un encabezado de sección no
+  se queda solo al final de una página.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

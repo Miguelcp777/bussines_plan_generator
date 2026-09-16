@@ -1,6 +1,6 @@
 {
-  "revision": "fc7be8926c3a3b53c9657daced7c23630106a22d",
-  "task_spec": ".specanchor/tasks/TASK-007.spec.md",
+  "revision": "51f71e323b011249cfb16e76f093660841dd6225",
+  "task_spec": ".specanchor/tasks/TASK-008.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,65 +8,58 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-REG-001: en los tres registros un 0 en importe o probabilidad es un dato y no un campo vacio; se sigue rechazando donde si es ausencia (mes, anio, texto). C-REG-002: el aviso nombra los campos que faltan y distingue las tres razones por las que una entrada aporta cero. El motor no se toca.",
+      "rationale": "C-PRINT-001 y 002: en papel solo pide no partirse lo que cabe en una pagina. La seccion entera pedia no partirse midiendo hasta 2.411 px contra ~1.017 de pagina, y el navegador la desbordaba encima de lo siguiente. Las tablas largas repiten cabecera. El informe en pantalla mide lo mismo: 11.426 px antes y despues.",
       "evidence": [
-        ".specanchor/tasks/TASK-007.spec.md"
+        ".specanchor/tasks/TASK-008.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Dos contratos nuevos de validacion de los registros.",
+      "rationale": "Dos contratos nuevos de impresion, con las alturas medidas.",
       "evidence": [
-        ".specanchor/tasks/TASK-007.spec.md"
+        ".specanchor/tasks/TASK-008.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-007.spec.md",
+      "path": ".specanchor/tasks/TASK-008.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, con la oportunidad real que no entraba y la evidencia de los cinco criterios.",
+      "rationale": "La tarea, con las alturas de las trece secciones y el limite de lo comprobado.",
       "evidence": [
-        ".specanchor/tasks/TASK-007.spec.md"
+        ".specanchor/tasks/TASK-008.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-007/REQ-001",
-      "acceptance": "TASK-007/AC-001",
-      "verification": "Anadir su oportunidad con valor 0",
+      "requirement": "TASK-008/REQ-001",
+      "acceptance": "TASK-008/AC-001",
+      "verification": "Medir todo elemento con break-inside:avoid en impresion",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-007.spec.md"
+      "evidence": ".specanchor/tasks/TASK-008.spec.md"
     },
     {
-      "requirement": "TASK-007/REQ-002",
-      "acceptance": "TASK-007/AC-002",
-      "verification": "Cliente vacio",
+      "requirement": "TASK-008/REQ-002",
+      "acceptance": "TASK-008/AC-002",
+      "verification": "Recorrer las reglas de @media print",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-007.spec.md"
+      "evidence": ".specanchor/tasks/TASK-008.spec.md"
     },
     {
-      "requirement": "TASK-007/REQ-003",
-      "acceptance": "TASK-007/AC-003",
-      "verification": "Mes vacio",
+      "requirement": "TASK-008/REQ-003",
+      "acceptance": "TASK-008/AC-003",
+      "verification": "Regla table-header-group presente",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-007.spec.md"
+      "evidence": ".specanchor/tasks/TASK-008.spec.md"
     },
     {
-      "requirement": "TASK-007/REQ-004",
-      "acceptance": "TASK-007/AC-004",
-      "verification": "Vista previa y aviso con importe 0 y con probabilidad 0",
+      "requirement": "TASK-008/REQ-005",
+      "acceptance": "TASK-008/AC-004",
+      "verification": "Altura del informe en pantalla, version anterior contra esta",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-007.spec.md"
-    },
-    {
-      "requirement": "TASK-007/REQ-005",
-      "acceptance": "TASK-007/AC-005",
-      "verification": "Oportunidad de 12.000 al 25% desde abril",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-007.spec.md"
+      "evidence": ".specanchor/tasks/TASK-008.spec.md"
     }
   ]
 }
