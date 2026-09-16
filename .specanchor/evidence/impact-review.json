@@ -1,6 +1,6 @@
 {
-  "revision": "5c63a69c8d11bf47f0e83d7fee5015e3ffa704a4",
-  "task_spec": ".specanchor/tasks/TASK-006.spec.md",
+  "revision": "fc7be8926c3a3b53c9657daced7c23630106a22d",
+  "task_spec": ".specanchor/tasks/TASK-007.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,58 +8,65 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-RISK-005: la entrada automatica sigue al equipo tambien hasta probabilidad cero; antes 'lossProb || e.prob' conservaba un valor viejo y la entrada podia sobrestimar sin poder bajarla. C-RISK-006: se avisa de la contradiccion At risk con Renew % 100. El motor no se toca.",
+      "rationale": "C-REG-001: en los tres registros un 0 en importe o probabilidad es un dato y no un campo vacio; se sigue rechazando donde si es ausencia (mes, anio, texto). C-REG-002: el aviso nombra los campos que faltan y distingue las tres razones por las que una entrada aporta cero. El motor no se toca.",
       "evidence": [
-        ".specanchor/tasks/TASK-006.spec.md"
+        ".specanchor/tasks/TASK-007.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Dos contratos nuevos del registro de riesgos.",
+      "rationale": "Dos contratos nuevos de validacion de los registros.",
       "evidence": [
-        ".specanchor/tasks/TASK-006.spec.md"
+        ".specanchor/tasks/TASK-007.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-006.spec.md",
+      "path": ".specanchor/tasks/TASK-007.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, reproducida sobre el plan real del usuario, con las dos causas separadas.",
+      "rationale": "La tarea, con la oportunidad real que no entraba y la evidencia de los cinco criterios.",
       "evidence": [
-        ".specanchor/tasks/TASK-006.spec.md"
+        ".specanchor/tasks/TASK-007.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-006/REQ-001",
-      "acceptance": "TASK-006/AC-001",
-      "verification": "Subir y bajar Renew % sobre el equipo 1109-70050",
+      "requirement": "TASK-007/REQ-001",
+      "acceptance": "TASK-007/AC-001",
+      "verification": "Anadir su oportunidad con valor 0",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-006.spec.md"
+      "evidence": ".specanchor/tasks/TASK-007.spec.md"
     },
     {
-      "requirement": "TASK-006/REQ-002",
-      "acceptance": "TASK-006/AC-002",
-      "verification": "Leer la entrada renderizada y el aviso al teclear",
+      "requirement": "TASK-007/REQ-002",
+      "acceptance": "TASK-007/AC-002",
+      "verification": "Cliente vacio",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-006.spec.md"
+      "evidence": ".specanchor/tasks/TASK-007.spec.md"
     },
     {
-      "requirement": "TASK-006/REQ-003",
-      "acceptance": "TASK-006/AC-003",
-      "verification": "Entrada manual con prob 77",
+      "requirement": "TASK-007/REQ-003",
+      "acceptance": "TASK-007/AC-003",
+      "verification": "Mes vacio",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-006.spec.md"
+      "evidence": ".specanchor/tasks/TASK-007.spec.md"
     },
     {
-      "requirement": "TASK-006/REQ-004",
-      "acceptance": "TASK-006/AC-004",
-      "verification": "Cargar BP2026_Iberia_09162026.json sin tocar nada",
+      "requirement": "TASK-007/REQ-004",
+      "acceptance": "TASK-007/AC-004",
+      "verification": "Vista previa y aviso con importe 0 y con probabilidad 0",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-006.spec.md"
+      "evidence": ".specanchor/tasks/TASK-007.spec.md"
+    },
+    {
+      "requirement": "TASK-007/REQ-005",
+      "acceptance": "TASK-007/AC-005",
+      "verification": "Oportunidad de 12.000 al 25% desde abril",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-007.spec.md"
     }
   ]
 }

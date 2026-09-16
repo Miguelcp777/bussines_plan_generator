@@ -151,6 +151,16 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   El campo se llama «Renew %», así que un 100 ahí se lee fácil como «riesgo al
   100», que es justo lo contrario.
 
+- **C-REG-001.** En los tres registros —riesgos, oportunidades y T&M— un **0**
+  en importe o probabilidad es un dato, no un campo vacío. `!val` lo trataba
+  como ausencia y no dejaba registrar, por ejemplo, un equipo en garantía que
+  todavía no vale nada. El 0 se sigue rechazando donde sí es ausencia: mes
+  (1-12), año (2000-2100) y texto.
+- **C-REG-002.** Un aviso de validación nombra **los campos que faltan**, no la
+  lista entera de obligatorios. Y una entrada que aporta $0 se acepta pero se
+  dice, distinguiendo las tres razones: importe 0, probabilidad 0, o fecha fuera
+  del año. Mandar a corregir el campo que no es cuesta lo mismo que el fallo.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

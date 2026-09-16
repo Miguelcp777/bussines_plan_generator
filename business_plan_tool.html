@@ -4689,11 +4689,50 @@ function monthsAffected(mon, yr){
   if (+yr > Y) return 0;
   return 12 - (+mon) + 1;
 }
+/* ============================================================
+   VALIDAR LOS REGISTROS
+
+   `if (!cust || !val || !mon || !yr || !p)` tiene dos problemas y los dos se
+   ven desde el otro lado de la pantalla:
+
+   1. Un **0** en valor o probabilidad es *falsy*, así que se trataba como campo
+      vacío. Una oportunidad de un equipo en garantía —valor 0 todavía— no se
+      podía registrar, con el campo relleno a la vista.
+   2. El aviso enumeraba cuatro campos sin decir cuál fallaba, que es lo que
+      convierte un fallo de un segundo en cinco minutos a ciegas.
+
+   Aquí el 0 se acepta donde es un número (valor, probabilidad) y se sigue
+   rechazando donde es una ausencia (mes, año, texto).
+   ============================================================ */
+function faltan(campos){
+  const malos = [];
+  campos.forEach(([etiqueta, valor, tipo]) => {
+    if (tipo === 'texto'){ if (!String(valor || '').trim()) malos.push(etiqueta); }
+    else if (tipo === 'mes'){ const m = +valor; if (!(m >= 1 && m <= 12)) malos.push(etiqueta); }
+    else if (tipo === 'anio'){ const y = +valor; if (!(y >= 2000 && y <= 2100)) malos.push(etiqueta); }
+    else if (tipo === 'numero'){ if (valor === '' || valor == null || !isFinite(+valor)) malos.push(etiqueta); }
+  });
+  if (!malos.length) return null;
+  return malos.length === 1
+    ? `${malos[0]} is required — fill it in and try again`
+    : `Still missing: ${malos.join(', ')}`;
+}
+
+/* Una entrada que no va a sumar nada se acepta —registrarla es seguimiento, no
+   previsión— pero tiene que verse, o parece que se ha perdido. */
+function notaSinImpacto(val, p){
+  if (+val === 0) return `<b>Logged at $0</b> — nothing is added to the plan until this has an annual value.`;
+  if (+p === 0)   return `<b>Logged at 0%</b> — nothing is weighted into the plan until this has a probability.`;
+  return '';
+}
+
 function calcRisk(){
   const val = numOf($('rVal').value), mon = +$('rMon').value, yr = +$('rYr').value, p = numOf($('rProb').value);
   const box = $('rCalc');
   const m = monthsAffected(mon, yr);
-  if (!val || m==null || !p){ $('rImp').value=''; box.className='calc'; return; }
+  if (m==null || $('rVal').value==='' || $('rProb').value===''){ $('rImp').value=''; box.className='calc'; return; }
+  const cero = notaSinImpacto(val, p);
+  if (cero){ $('rImp').value = money(0); box.className='calc on'; box.innerHTML = cero; return; }
   const imp = val * (clamp(p,0,100)/100) * (m/12);
   $('rImp').value = money(imp); $('rImp').dataset.raw = imp;
   box.className = 'calc on';
@@ -4705,8 +4744,10 @@ function calcRisk(){
 function addRisk(){
   const cust=$('rCust').value.trim(), desc=$('rDesc').value.trim();
   const val=numOf($('rVal').value), mon=+$('rMon').value, yr=+$('rYr').value, p=numOf($('rProb').value);
-  if (!cust || !desc || !val || !mon || !yr || !p)
-    return toast('Customer, risk event, annual value, event month/year and probability are all required', true);
+  const falta = faltan([['customer', cust, 'texto'], ['risk event', desc, 'texto'],
+    ['annual value', $('rVal').value, 'numero'], ['event month', mon, 'mes'],
+    ['event year', yr, 'anio'], ['probability', $('rProb').value, 'numero']]);
+  if (falta) return toast(falta, true);
   const rate = S.cur==='USD' ? 1 : fxRate(S.cur);
   // Re-deriving the amount from a rounded box would shave a unit off on every save.
   const kept = $('rVal').dataset.usd;
@@ -4833,10 +4874,12 @@ function renderRisks(){
 function calcOpp(){
   const val=numOf($('oVal').value), mon=+$('oMon').value, yr=+$('oYr').value, p=numOf($('oProb').value);
   const box=$('oCalc'), m = monthsAffected(mon,yr);
-  if (!val || m==null || !p){ $('oImp').value=''; box.className='calc'; return; }
+  if (m==null || $('oVal').value==='' || $('oProb').value===''){ $('oImp').value=''; box.className='calc'; return; }
   const imp = val*(clamp(p,0,100)/100)*(m/12);
   $('oImp').value = money(imp);
   box.className='calc on';
+  const cero = notaSinImpacto(val, p);
+  if (cero){ box.innerHTML = cero; return; }
   box.innerHTML = m>0
     ? `Revenue can start <b>${MONTHS[mon-1]} ${yr}</b> → <b>${m}</b> eligible months in ${S.cy.year}, at <b>${p}%</b> probability.
        <span class="fx">Expected opportunity = ${money(val)} × ${p}% × ${m}/12 = ${money(imp)}</span>`
@@ -4844,8 +4887,10 @@ function calcOpp(){
 }
 function addOpp(){
   const cust=$('oCust').value.trim(), val=numOf($('oVal').value), mon=+$('oMon').value, yr=+$('oYr').value, p=numOf($('oProb').value);
-  if (!cust || !val || !mon || !yr || !p)
-    return toast('Customer, annual value, start month/year and probability are all required', true);
+  const falta = faltan([['customer', cust, 'texto'], ['annual value', $('oVal').value, 'numero'],
+    ['start month', mon, 'mes'], ['start year', yr, 'anio'],
+    ['probability', $('oProb').value, 'numero']]);
+  if (falta) return toast(falta, true);
   const rate = S.cur==='USD'?1:fxRate(S.cur);
   const kept = $('oVal').dataset.usd;
   const usd = (kept && Math.round(toCur(+kept)) === Math.round(val)) ? +kept : val/rate;
@@ -4877,8 +4922,12 @@ function addOpp(){
     toast(Math.round(d) === 0 ? 'Opportunity updated · no change to the forecast'
       : `Opportunity updated · expected revenue ${d>0?'+':'-'}${money(Math.abs(d))} against before`);
   } else {
+    /* Un cero puede venir de tres sitios distintos y culpar a la fecha cuando el
+       problema es el importe manda a corregir lo que no toca. */
     toast(w > 0 ? `Opportunity added · expected revenue +${money(w)} in ${S.cy.year}`
-                : `Opportunity added · no revenue in ${S.cy.year}, it starts after year end`);
+        : entry.usd === 0 ? `Opportunity logged at $0 — it adds nothing to ${S.cy.year} until it has an annual value`
+        : entry.prob === 0 ? `Opportunity logged at 0% — it adds nothing to ${S.cy.year} until it has a probability`
+        : `Opportunity added · no revenue in ${S.cy.year}, it starts after year end`);
   }
 }
 function delOpp(id){
@@ -4984,7 +5033,9 @@ function tmDraftYear(){ return numOf($('tYr').value) || S.cy.year; }
 function calcTm(){
   const val = numOf($('tVal').value), mon = +$('tMon').value, yr = numOf($('tYr').value), p = numOf($('tProb').value);
   const box = $('tCalc'), m = monthsAffected(mon, yr);
-  if (!val || m == null || !p){ $('tImp').value = ''; box.className = 'calc'; return; }
+  if (m == null || $('tVal').value==='' || $('tProb').value===''){ $('tImp').value = ''; box.className = 'calc'; return; }
+  const cero = notaSinImpacto(val, p);
+  if (cero){ $('tImp').value = money(0); box.className='calc on'; box.innerHTML = cero; return; }
   const imp = val * (clamp(p,0,100)/100) * (m/12);
   $('tImp').value = money(imp);
   box.className = 'calc on';
@@ -4997,8 +5048,10 @@ function calcTm(){
 function addTm(){
   const cust = $('tCust').value.trim(), val = numOf($('tVal').value);
   const mon = +$('tMon').value, yr = numOf($('tYr').value), p = numOf($('tProb').value);
-  if (!cust || !val || !mon || !yr || !p)
-    return toast('Description, annual amount, start month/year and confidence are all required', true);
+  const falta = faltan([['description', cust, 'texto'], ['annual amount', $('tVal').value, 'numero'],
+    ['start month', mon, 'mes'], ['start year', $('tYr').value, 'anio'],
+    ['confidence', $('tProb').value, 'numero']]);
+  if (falta) return toast(falta, true);
   const rate = S.cur === 'USD' ? 1 : fxRate(S.cur);
   const kept = $('tVal').dataset.usd;
   const usd = (kept && Math.round(toCur(+kept)) === Math.round(val)) ? +kept : val/rate;
