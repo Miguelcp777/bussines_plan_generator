@@ -1,47 +1,74 @@
 {
-  "revision": "9052d54364de7fbc7a59e057f83a938d54d26ba5",
-  "task_spec": ".specanchor/tasks/TASK-002.spec.md",
+  "revision": "c593c907ad265e019fad616c2ecbc03f58c884e8",
+  "task_spec": ".specanchor/tasks/TASK-003.spec.md",
   "files": [
     {
-      "path": "CLAUDE_supabase.md",
-      "kind": "behavior_preserving",
+      "path": "business_plan_tool.html",
+      "kind": "contract",
       "specs": [
-        ".specanchor/modules/variantes-y-legado.spec.md"
+        ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "Solo se antepone un aviso diciendo que describe la variante parada y una generacion anterior de la app. No cambia ninguna instruccion existente ni ningun contrato: el modulo variantes-y-legado ya declara esa variante como no ejecutada (D-VAR-001). El archivo no se ejecuta.",
+      "rationale": "Anade un contrato de rendimiento (C-PERF-001 a 003): leer solo la hoja usada, avisar antes de bloquear y ofrecer la salida por CSV. No cambia formatos de entrada, mapeo de columnas ni cifras: las nueve medidas salen identicas antes y despues.",
       "evidence": [
-        ".specanchor/tasks/TASK-002.spec.md"
+        ".specanchor/tasks/TASK-003.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/modules/bp-builder.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "Nueva seccion de rendimiento con los tres contratos y la tabla de tiempos medidos.",
+      "evidence": [
+        ".specanchor/tasks/TASK-003.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/global/arquitectura.spec.md",
+      "kind": "clarification",
+      "specs": [],
+      "rationale": "Registra el coste real de leer una hoja de calculo y cierra U-ARQ-003. No cambia ninguna restriccion; documenta que el coste escala con el numero de hojas, no con los megas.",
+      "evidence": [
+        ".specanchor/tasks/TASK-003.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/tasks/TASK-003.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "La tarea de este cambio, con su trazabilidad y evidencia.",
+      "evidence": [
+        ".specanchor/tasks/TASK-003.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-002/REQ-001",
-      "acceptance": "TASK-002/AC-001",
-      "verification": "Comprobacion dato a dato de cada afirmacion tecnica contra business_plan_tool.html",
+      "requirement": "TASK-003/REQ-001",
+      "acceptance": "TASK-003/AC-001",
+      "verification": "Cronometrar la lectura del .xlsb real antes y despues",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-002.spec.md"
+      "evidence": ".specanchor/tasks/TASK-003.spec.md"
     },
     {
-      "requirement": "TASK-002/REQ-002",
-      "acceptance": "TASK-002/AC-002",
-      "verification": "Ejecutar el bloque de validacion del propio CLAUDE.md",
+      "requirement": "TASK-003/REQ-002",
+      "acceptance": "TASK-003/AC-002",
+      "verification": "Contador de requestAnimationFrame y lectura del DOM dentro de leerHoja",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-002.spec.md"
+      "evidence": ".specanchor/tasks/TASK-003.spec.md"
     },
     {
-      "requirement": "TASK-002/REQ-003",
-      "acceptance": "TASK-002/AC-003",
-      "verification": "md5sum CLAUDE.md CLAUDE_supabase.md",
+      "requirement": "TASK-003/REQ-003",
+      "acceptance": "TASK-003/AC-004",
+      "verification": "Cargar el .xls y la hoja DB como .csv",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-002.spec.md"
+      "evidence": ".specanchor/tasks/TASK-003.spec.md"
     },
     {
-      "requirement": "TASK-002/REQ-005",
-      "acceptance": "TASK-002/AC-004",
-      "verification": "md5sum business_plan_tool.html antes y despues",
+      "requirement": "TASK-003/REQ-004",
+      "acceptance": "TASK-003/AC-003",
+      "verification": "Comparar las nueve cifras con las de antes del cambio",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-002.spec.md"
+      "evidence": ".specanchor/tasks/TASK-003.spec.md"
     }
   ]
 }

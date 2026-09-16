@@ -64,6 +64,20 @@ usuario sea un control de acceso real (ver `alcance-y-usuarios.spec.md`).
 - **R-ARQ-004.** El bloque `<script>` debe pasar `node --check` tras cualquier
   edición. Es la única comprobación automatizada que existe hoy.
 
+## Coste de leer una hoja de cálculo · VERIFIED
+
+`XLSX.read()` parsea **todas** las hojas del libro, y corre en el hilo
+principal. Medido el 16 de septiembre de 2026 sobre los archivos reales
+(TASK-003): la installed base son 7,2 MB con 3 hojas y tarda ~400 ms; el
+Service Reclass son 5,6 MB con **24 hojas** —cachés de Cognos y volcados de
+trimestres viejos entre ellas— y tardaba ~40 s, con Chrome ofreciendo cerrar la
+pestaña. Pidiendo solo la hoja `DB` baja a ~23,5 s; esa misma hoja como `.csv`,
+a ~26 ms.
+
+La consecuencia de diseño, que resuelve `U-ARQ-003`: **el coste escala con el
+número de hojas, no con los megas**. Un worker lo quitaría de en medio, pero
+`file://` no permite workers, así que la salida buena es el `.csv`.
+
 ## Invariantes
 
 - **I-ARQ-001.** Un solo bloque `<script>` en línea. Dos bloques romperían la
@@ -95,6 +109,8 @@ usuario sea un control de acceso real (ver `alcance-y-usuarios.spec.md`).
   cdnjs. Si no lo permite, se pierden Excel, CSV y gráficos a la vez.
 - **U-ARQ-002.** No se ha comprobado cómo se comporta el archivo servido desde
   SharePoint: si se descarga en vez de renderizarse, la herramienta no abre.
+- ~~**U-ARQ-003.** Cuánto cuesta leer los archivos de verdad.~~ → **medido** en
+  TASK-003; ver arriba.
 
 ## Historial de cambios
 

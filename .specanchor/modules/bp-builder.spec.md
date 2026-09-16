@@ -87,6 +87,30 @@ persona.
 Ver `global/calidad-y-seguridad.spec.md`. En una línea: no hay permisos, hay
 comodidad de trabajo, y está dicho en pantalla.
 
+## Rendimiento y límites operativos
+
+Todo corre en el hilo principal del navegador: no hay worker —`file://` no los
+permite— así que **leer una hoja de cálculo congela la pestaña** mientras dura.
+
+Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
+
+| Archivo | Formato | Tamaño | Hojas | Lectura |
+|---|---|---|---|---|
+| Installbase report July 2026 | `.xls` | 7,2 MB | 3 | **~400 ms** |
+| Service Reclass Q3 2026 | `.xlsb` | 5,6 MB | **24** | **~23,5 s** |
+| La hoja `DB` como `.csv` | `.csv` | 1,6 MB | 1 | **~26 ms** |
+
+- **C-PERF-001.** Se lee **solo la hoja que se va a usar**. `bookSheets:true`
+  da los nombres en ~320 ms y `sheets:<hoja>` evita parsear las demás. Sobre el
+  Reclass, eso es ~40 s → ~23,5 s. No es el tamaño lo que cuesta: la installed
+  base es mayor y tarda cien veces menos. Son las hojas.
+- **C-PERF-002.** Un libro de más de tres hojas avisa **antes** de bloquear, y
+  el aviso se pinta de verdad: el parseo espera dos fotogramas (`trasPintar`).
+  Verificado — cinco fotogramas entre el lanzamiento y el inicio del parseo.
+- **C-PERF-003.** El aviso ofrece la salida que de verdad resuelve el problema:
+  guardar esa hoja como `.csv`. Tres órdenes de magnitud, y el formato ya está
+  soportado.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado
