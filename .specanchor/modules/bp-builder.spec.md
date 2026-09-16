@@ -185,6 +185,19 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   síntoma seguía. Un detector de solapes por rectángulos de texto marca falsos
   positivos en las cabeceras de tabla; la imagen renderizada manda.
 
+- **C-OPP-001.** Plataforma y tipo de cobertura de una oportunidad son
+  **desplegables poblados desde la installed base cargada**, no texto libre.
+  Escribir «Catalys» donde la flota dice `FEMTOLASER` producía un informe con
+  una plataforma que no existe en los datos.
+- **C-OPP-002.** La **corriente** —Direct o Bundle— se deduce de cómo se paga
+  esa misma cobertura en la flota: cuántos equipos con esa cobertura los factura
+  el cliente y cuántos vienen del Reclass. Se enseña con el recuento que la
+  justifica y **se puede corregir a mano**; lo que se guarda en la entrada es la
+  decisión, no la regla, para que un cambio de datos no reescriba un plan.
+- **C-OPP-003.** El informe reparte la oportunidad en las dos corrientes, en la
+  tabla y en el pie. Una entrada anterior a esto no tiene corriente: cuenta como
+  directa y **se marca «assumed»**, en la fila y en el texto.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

@@ -1139,10 +1139,17 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
           <div class="grid g4">
             <div class="fld sp2"><label>Customer / prospect *</label><input class="inp" id="oCust"></div>
             <div class="fld"><label>Serial</label><input class="inp" id="oSN"></div>
-            <div class="fld"><label>Platform</label><input class="inp" id="oPlat"></div>
+            <div class="fld"><label>Platform</label><select class="inp" id="oPlat"><option value="">—</option></select></div>
             <div class="fld"><label>Country <span class="hint">— scopes it to that country</span></label><select class="inp" id="oCtry"></select></div>
             <div class="fld"><label>Opportunity type</label>
               <select class="inp" id="oType"><option>New installation</option><option>No-contract conversion</option><option>Contract upgrade</option><option>Recovered contract</option><option>Renewal conversion</option><option>Replacement system</option></select></div>
+            <div class="fld"><label>Coverage type <span class="hint">— decides the revenue stream</span></label>
+              <select class="inp" id="oCov" onchange="onOppCov()"><option value="">—</option></select></div>
+            <div class="fld"><label>Revenue stream</label>
+              <select class="inp" id="oStream" onchange="onOppStreamManual()">
+                <option value="direct">Direct — the customer is invoiced</option>
+                <option value="bundle">Bundle — reclassed internally</option></select>
+              <span class="hint" id="oStreamWhy">Pick a coverage type and this follows the fleet.</span></div>
             <div class="fld"><label>Annual value *</label><input class="inp num" id="oVal" type="number" min="0" oninput="calcOpp()"></div>
             <div class="fld"><label>Start month *</label><select class="inp" id="oMon" onchange="calcOpp()"><option value="">—</option></select></div>
             <div class="fld"><label>Start year *</label><input class="inp num" id="oYr" type="number" min="2020" max="2040" oninput="calcOpp()"></div>
@@ -3916,6 +3923,7 @@ function onCurrency(){ S.cur = $('curSel').value; saveSettings(); renderAll(); }
    FILTERS
    ============================================================ */
 function buildFilters(){
+  fillOppSelects();          // plataformas y coberturas salen de los propios datos
   const groups = [
     ['cluster','Cluster', r=>r.cluster],
     ['country','Country', r=>r.country],
@@ -4637,7 +4645,15 @@ function pickRec(key, kind){
 const R_FIELDS = { cust:'rCust', sn:'rSN', plat:'rPlat', country:'rCtry', desc:'rDesc',
                    type:'rType', evid:'rEvid', mit:'rMit', own:'rOwn', rev:'rRev' };
 const O_FIELDS = { cust:'oCust', sn:'oSN', plat:'oPlat', country:'oCtry', type:'oType',
-                   desc:'oDesc', dep:'oDep', own:'oOwn', rev:'oRev' };
+                   cov:'oCov', desc:'oDesc', dep:'oDep', own:'oOwn', rev:'oRev' };
+
+/* Si la oportunidad se ancla a un equipo real, su plataforma y su cobertura ya
+   se saben: rellenarlas a mano es una ocasión de equivocarse. */
+function oppDesdeEquipo(r){
+  if (!r) return;
+  if ($('oPlat') && r.platform) $('oPlat').value = r.platform;
+  if ($('oCov')  && r.coverage){ $('oCov').value = r.coverage; onOppCov(); }
+}
 
 function editRisk(id){
   const e = S.risks.find(x=>x.id===id); if (!e) return;
@@ -4662,6 +4678,9 @@ function editOpp(id){
   $('oMon').value  = e.mon || '';
   $('oYr').value   = e.yr || '';
   $('oProb').value = e.prob ?? '';
+  $('oStream').value = oppStream(e);
+  setTx('oStreamWhy', e.stream ? 'Saved with this entry.'
+    : 'This entry predates revenue streams — counted as direct until you say otherwise.');
   $('oSrch').value = '';
   if (e.key) $('oSrch').dataset.key = e.key; else delete $('oSrch').dataset.key;
   calcOpp(); syncFormMode('opp'); renderOpps();
@@ -4923,6 +4942,7 @@ function addOpp(){
   const usd = (kept && Math.round(toCur(+kept)) === Math.round(val)) ? +kept : val/rate;
   const entry = {
     cust, sn:$('oSN').value.trim(), plat:$('oPlat').value.trim(),
+    cov:$('oCov').value.trim(), stream:($('oStream').value === 'bundle' ? 'bundle' : 'direct'),
     type:$('oType').value, desc:$('oDesc').value.trim(), usd, mon, yr, prob:clamp(p,0,100),
     dep:$('oDep').value.trim(), own:$('oOwn').value.trim(), rev:$('oRev').value,
     key:$('oSrch').dataset.key||'', country:$('oCtry').value.trim().toUpperCase()
@@ -5394,14 +5414,72 @@ function movTblLost(list, mode, limit){
   return `<table class="${cls}">${head}<tbody>${body}</tbody>${foot}</table>`;
 }
 
+/* ============================================================
+   DE QUÉ CORRIENTE ES UNA OPORTUNIDAD
+
+   La línea base se reparte en directo y bundle porque las dos se comportan
+   distinto: la directa la factura el cliente y hay que renovarla; la bundle se
+   reclasifica internamente y viaja con el equipo. Lo que se va a vender no se
+   repartía, así que una oportunidad de $40.000 no decía cuál de las dos engorda.
+
+   La corriente se deduce de la propia flota: de los equipos que ya llevan esa
+   cobertura, ¿cuántos los paga el cliente y cuántos vienen del Reclass? Es un
+   supuesto con evidencia a la vista, y se puede corregir a mano — por eso la
+   corriente se guarda en la entrada y no se recalcula al vuelo.
+   ============================================================ */
+function plataformasDeLaFlota(){ return uniq(S.rows.map(r=>r.platform)).filter(Boolean).sort(); }
+function coberturasDeLaFlota(){ return uniq(S.rows.map(r=>r.coverage)).filter(Boolean).sort(); }
+
+/* Cómo se paga esa cobertura hoy. Devuelve el reparto y quién manda. */
+function corrienteDeCobertura(cov){
+  const rs = S.rows.filter(r => r.coverage === cov);
+  const directos = rs.filter(r => (r._usd || 0) > 0).length;
+  const bundles  = rs.filter(r => (r._usd || 0) <= 0 && (r.bundleUsd || 0) > 0).length;
+  const total = rs.length;
+  if (!total) return { stream:'direct', directos:0, bundles:0, total:0, sinDatos:true };
+  return { stream: bundles > directos ? 'bundle' : 'direct', directos, bundles, total, sinDatos:false };
+}
+
+function fillOppSelects(){
+  const pl = $('oPlat'), cv = $('oCov');
+  if (pl) pl.innerHTML = '<option value="">—</option>' +
+    plataformasDeLaFlota().map(x=>`<option>${esc(x)}</option>`).join('');
+  if (cv) cv.innerHTML = '<option value="">—</option>' +
+    coberturasDeLaFlota().map(x=>`<option>${esc(x)}</option>`).join('');
+}
+
+/* Al elegir cobertura, la corriente sigue a la flota — y se dice por qué. */
+function onOppCov(){
+  const cov = $('oCov').value;
+  const why = $('oStreamWhy');
+  if (!cov){ if (why) why.textContent = 'Pick a coverage type and this follows the fleet.'; return; }
+  const c = corrienteDeCobertura(cov);
+  $('oStream').value = c.stream;
+  $('oStream').dataset.auto = '1';
+  if (why) why.textContent = c.sinDatos
+    ? `No system in scope carries ${cov}, so this defaults to direct — change it if that is wrong.`
+    : `${c.stream === 'bundle' ? c.bundles : c.directos} of ${c.total} system${c.total===1?'':'s'} on ${cov} `
+      + `${c.stream === 'bundle' ? 'are funded by the reclass' : 'are invoiced to the customer'}.`;
+}
+function onOppStreamManual(){
+  $('oStream').dataset.auto = '';
+  const why = $('oStreamWhy');
+  if (why) why.textContent = 'Set by hand — it will be saved exactly as you leave it.';
+}
+const STREAM_LBL = { direct:'Direct', bundle:'Bundle' };
+/* Una oportunidad guardada antes de esto no lleva corriente. Se cuenta como
+   directa, que es lo que era implícitamente, y se marca para que se vea. */
+const oppStream = e => (e && e.stream === 'bundle') ? 'bundle' : 'direct';
+
 function movTblOpp(mode, limit){
   const app = mode === 'app', cls = app ? 'dt' : 'rt';
   const list = [...S.opps].sort((a,b)=>sum(eventMonths(b,1,'opp'))-sum(eventMonths(a,1,'opp')));
   const n = limit || list.length;
   const head = `<thead><tr><th>Serial</th><th>Customer</th><th class="${app?'c':''}">Country</th><th>Platform</th>
+    <th>Coverage</th><th>Stream</th>
     <th>Type</th><th>Reason / description</th><th>Starts</th><th class="r">Annual value</th>
     <th class="r">Prob.</th><th class="r">Into ${S.cy.year}</th><th>Owner</th></tr></thead>`;
-  if (!list.length) return `<table class="${cls}">${head}<tbody><tr><td colspan="11" class="empty"
+  if (!list.length) return `<table class="${cls}">${head}<tbody><tr><td colspan="13" class="empty"
       style="text-align:center;padding:16px;color:#8a939f">No opportunities logged</td></tr></tbody></table>`;
   const body = list.slice(0,n).map(e=>{
     const w = sum(eventMonths(e,1,'opp'));
@@ -5409,6 +5487,9 @@ function movTblOpp(mode, limit){
       <td class="mono">${esc(e.sn||'—')}</td>
       <td>${app?`<span class="tnm">${esc(e.cust)}</span>`:`<b>${esc(e.cust)}</b>`}</td>
       <td class="${app?'c mono':''}">${esc(e.country||'—')}</td><td>${esc(e.plat||'—')}</td>
+      <td>${esc(e.cov||'—')}</td>
+      <td>${app?`<span class="pill ${oppStream(e)==='bundle'?'b':'n'}">${STREAM_LBL[oppStream(e)]}</span>`
+             :STREAM_LBL[oppStream(e)]}${!e.stream?`<span class="${app?'tsub':''}"${app?'':' style="color:#8a939f;display:block"'}>assumed</span>`:''}</td>
       <td>${app?`<span class="pill p">${esc(e.type)}</span>`:esc(e.type)}</td>
       <td${!e.desc?(app?' class="c-o"':' style="color:#b4600a"'):''}${app?' style="min-width:210px"':''}>${esc(e.desc || 'not recorded')}
         ${e.dep?`<span class="${app?'tsub':''}" style="${app?'max-width:none;white-space:normal;line-height:1.35':'color:#8a939f;display:block'}">depends on ${esc(e.dep)}</span>`:''}</td>
@@ -5417,10 +5498,15 @@ function movTblOpp(mode, limit){
       <td class="r ${app&&w>0?'c-g':''}">${w>0?`<b>+${money(w)}</b>`:'—'}</td>
       <td${!e.own?(app?' class="c-o"':' style="color:#b4600a"'):''}>${esc(e.own || 'unassigned')}</td></tr>`;
   }).join('');
-  const foot = `<tfoot><tr><td colspan="7">${list.length} opportunit${list.length===1?'y':'ies'}${
-    n<list.length?` · top ${n} shown`:''}</td>
+  const dir = list.filter(e=>oppStream(e)==='direct'), bun = list.filter(e=>oppStream(e)==='bundle');
+  const wDir = sum(dir, e=>sum(eventMonths(e,1,'opp'))), wBun = sum(bun, e=>sum(eventMonths(e,1,'opp')));
+  const foot = `<tfoot><tr><td colspan="9">${list.length} opportunit${list.length===1?'y':'ies'}${
+    n<list.length?` · top ${n} shown`:''}${
+    /* El reparto va en el pie y no en un sitio aparte: quien mira el total tiene
+       que ver de qué corriente sale sin buscarlo. */
+    (wDir||wBun)?` · <b>${money(wDir)}</b> direct · <b>${money(wBun)}</b> bundle`:''}</td>
     <td class="r">${money(sum(list,e=>toCur(e.usd||0)))}</td><td></td>
-    <td class="r">+${money(sum(list,e=>sum(eventMonths(e,1,'opp'))))}</td><td></td></tr></tfoot>`;
+    <td class="r">+${money(wDir+wBun)}</td><td></td></tr></tfoot>`;
   return `<table class="${cls}">${head}<tbody>${body}</tbody>${foot}</table>`;
 }
 
@@ -8254,6 +8340,17 @@ function openReport(){
     <div class="rs"><div class="tag">Section 5</div><h2>Opportunities</h2>
       <p>New revenue added on top, each weighted by how likely it is and by how many months of ${S.cy.year} it can
         actually bill. The annual value is what it is worth at full year; the last column is what reaches the plan.</p>
+      ${(function(){
+        const d = sum(S.opps.filter(e=>oppStream(e)==='direct'), e=>sum(eventMonths(e,1,'opp')));
+        const b = sum(S.opps.filter(e=>oppStream(e)==='bundle'), e=>sum(eventMonths(e,1,'opp')));
+        if (!(d+b)) return '';
+        const viejas = S.opps.filter(e=>!e.stream).length;
+        return `<p><b>${money(d)}</b> of it is direct contract revenue the customer would be invoiced for, and
+          <b>${money(b)}</b> is bundled cover, reclassed internally. The two behave differently once they are on
+          the books — the direct half has to be renewed, the bundled half travels with the equipment — which is
+          why the baseline above is split the same way.${
+          viejas ? ` ${viejas} ${viejas===1?'entry predates':'entries predate'} this split and ${viejas===1?'is':'are'} counted as direct.` : ''}</p>`;
+      })()}
       ${movTblOpp('report', 60)}
       ${S.opps.some(e=>!e.own) ? (function(){ const n = S.opps.filter(e=>!e.own).length;
         return `<div class="rq"><b>${n} ${n===1?'opportunity has':'opportunities have'} no owner.</b>

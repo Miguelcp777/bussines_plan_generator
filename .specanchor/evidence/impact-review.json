@@ -1,6 +1,6 @@
 {
-  "revision": "7f62ca2857a9bce0f3fdca41724c3812abd169ce",
-  "task_spec": ".specanchor/tasks/TASK-009.spec.md",
+  "revision": "7e761f1b194ee3e0bf120e25962ed5c10c736ca3",
+  "task_spec": ".specanchor/tasks/TASK-010.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,60 +8,72 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-PRINT-003: con el informe abierto se oculta el armazon de la app al imprimir, que era lo que se dibujaba encima. C-PRINT-004: el pie pasa a bottom:0 porque un bottom negativo lo mandaba arriba, encima del rotulo de seccion. Verificado generando el PDF.",
+      "rationale": "C-OPP-001 a 003: plataforma y cobertura pasan a desplegables poblados desde la installed base; la corriente Direct/Bundle se deduce de como se paga esa cobertura en la flota, se ensena con su recuento y se puede corregir; el informe reparte la oportunidad en las dos corrientes. Las entradas anteriores cuentan como directas y se marcan.",
       "evidence": [
-        ".specanchor/tasks/TASK-009.spec.md"
+        ".specanchor/tasks/TASK-010.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Tres contratos de impresion, incluido como se verifica.",
+      "rationale": "Tres contratos nuevos del registro de oportunidades.",
       "evidence": [
-        ".specanchor/tasks/TASK-009.spec.md"
+        ".specanchor/tasks/TASK-010.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-009.spec.md",
+      "path": ".specanchor/tasks/TASK-010.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, con la evidencia del PDF antes y despues.",
+      "rationale": "La tarea, con la evidencia de los seis criterios sobre el plan real.",
       "evidence": [
-        ".specanchor/tasks/TASK-009.spec.md"
-      ]
-    },
-    {
-      "path": ".specanchor/tasks/TASK-008.spec.md",
-      "kind": "correction",
-      "specs": [],
-      "rationale": "TASK-008 se cerro afirmando que resolvia el solape y no lo hacia. Se anota la correccion y el puntero a TASK-009, sin borrar lo que si era correcto.",
-      "evidence": [
-        ".specanchor/tasks/TASK-009.spec.md"
+        ".specanchor/tasks/TASK-010.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-009/REQ-001",
-      "acceptance": "TASK-009/AC-001",
-      "verification": "Buscar marcas del armazon en el PDF generado",
+      "requirement": "TASK-010/REQ-001",
+      "acceptance": "TASK-010/AC-001",
+      "verification": "Contenido del desplegable de plataforma contra los datos",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-009.spec.md"
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
     },
     {
-      "requirement": "TASK-009/REQ-002",
-      "acceptance": "TASK-009/AC-002",
-      "verification": "Posicion del pie en las doce paginas",
+      "requirement": "TASK-010/REQ-002",
+      "acceptance": "TASK-010/AC-002",
+      "verification": "Contenido del desplegable de cobertura contra los datos",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-009.spec.md"
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
     },
     {
-      "requirement": "TASK-009/REQ-003",
-      "acceptance": "TASK-009/AC-003",
-      "verification": "Renderizar paginas a imagen y mirarlas",
+      "requirement": "TASK-010/REQ-003",
+      "acceptance": "TASK-010/AC-003",
+      "verification": "FEM - TA, PHC-DEMO y una cobertura inexistente",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-009.spec.md"
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+    },
+    {
+      "requirement": "TASK-010/REQ-004",
+      "acceptance": "TASK-010/AC-004",
+      "verification": "Cambiar la corriente a mano y guardar",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+    },
+    {
+      "requirement": "TASK-010/REQ-005",
+      "acceptance": "TASK-010/AC-005",
+      "verification": "Tabla, pie y parrafo del informe",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+    },
+    {
+      "requirement": "TASK-010/REQ-006",
+      "acceptance": "TASK-010/AC-006",
+      "verification": "Entrada sin cov ni stream",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-010.spec.md"
     }
   ]
 }
