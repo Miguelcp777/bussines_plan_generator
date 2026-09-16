@@ -77,7 +77,7 @@ es lo que había.
 | AC-003/004 | Cabecera con y sin filtro | **pass** | EV-002 |
 | AC-005 | Banderas en pantalla | **pass** | EV-003 |
 | AC-006 | Sin CDN | **pass por construcción** | EV-004 |
-| AC-007 | Banderas en el PDF | **FAIL** — no se imprimen | EV-005 |
+| AC-007 | Banderas en el PDF | **FAIL** — resuelto en TASK-012 | EV-005 |
 
 - **EV-001:** Tres oportunidades —una `bundle`, una `direct`, una guardada antes
   sin corriente—: `dO = $50.000` (los $40.000 declarados directos más los

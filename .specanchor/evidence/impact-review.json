@@ -1,6 +1,6 @@
 {
-  "revision": "6697208d31663a5ad21fdbe19f5aa1ec9770a1cc",
-  "task_spec": ".specanchor/tasks/TASK-011.spec.md",
+  "revision": "1df615884299cad9e65208c0f16cb83c07e1cf3f",
+  "task_spec": ".specanchor/tasks/TASK-012.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,51 +8,60 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-OPP-004: la corriente declarada en una oportunidad manda sobre la inferida, que devolvia todo a directo cuando la entrada no apunta a un equipo. C-UI-001: el alcance se lee de los registros informados y no solo de S.filt. C-UI-002: banderas como SVG del CDN en un img, con el codigo de pais en el alt; no se imprimen y queda dicho.",
+      "rationale": "C-UI-003: las banderas pasan a estar dentro del archivo como PNG de 48x36 en base64. Pedidas al CDN no se imprimian. No se incrustan los SVG porque suman 653 KB en escudos invisibles a 18 px; rasterizadas son 57 KB.",
       "evidence": [
-        ".specanchor/tasks/TASK-011.spec.md"
+        ".specanchor/tasks/TASK-012.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Tres contratos nuevos, uno de ellos con su pendiente escrito.",
+      "rationale": "C-UI-003 nuevo y se cierra el pendiente de C-UI-002.",
       "evidence": [
-        ".specanchor/tasks/TASK-011.spec.md"
+        ".specanchor/tasks/TASK-012.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/tasks/TASK-012.spec.md",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "La tarea, con las medidas que justifican rasterizar en vez de incrustar los SVG.",
+      "evidence": [
+        ".specanchor/tasks/TASK-012.spec.md"
       ]
     },
     {
       "path": ".specanchor/tasks/TASK-011.spec.md",
-      "kind": "requirement",
+      "kind": "correction",
       "specs": [],
-      "rationale": "La tarea, con seis criterios en verde y uno en rojo declarado como tal.",
+      "rationale": "Su AC-007 quedaba en rojo; se apunta donde se resolvio.",
       "evidence": [
-        ".specanchor/tasks/TASK-011.spec.md"
+        ".specanchor/tasks/TASK-012.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-011/REQ-001",
-      "acceptance": "TASK-011/AC-001",
-      "verification": "forecastSplit con una oportunidad bundle, una direct y una sin corriente",
+      "requirement": "TASK-012/AC-001",
+      "acceptance": "TASK-012/AC-001",
+      "verification": "Buscar el CDN de banderas en el archivo",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-011.spec.md"
+      "evidence": ".specanchor/tasks/TASK-012.spec.md"
     },
     {
-      "requirement": "TASK-011/REQ-002",
-      "acceptance": "TASK-011/AC-003",
-      "verification": "Portada del informe con el alcance de Iberia y sin filtros",
+      "requirement": "TASK-012/AC-002",
+      "acceptance": "TASK-012/AC-002",
+      "verification": "Generar el PDF, contar imagenes y mirar el recorte",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-011.spec.md"
+      "evidence": ".specanchor/tasks/TASK-012.spec.md"
     },
     {
-      "requirement": "TASK-011/REQ-003",
-      "acceptance": "TASK-011/AC-005",
-      "verification": "Banderas en carril, panel, tabla e informe en pantalla",
+      "requirement": "TASK-012/AC-003",
+      "acceptance": "TASK-012/AC-003",
+      "verification": "Tamano del archivo antes y despues",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-011.spec.md"
+      "evidence": ".specanchor/tasks/TASK-012.spec.md"
     }
   ]
 }

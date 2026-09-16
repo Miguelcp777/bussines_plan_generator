@@ -212,7 +212,14 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   —medido, un solo color contra los 130 de un emoji—. Tampoco se carga la hoja
   de `flag-icons`: su clase `.fi` es la misma que la de las casillas del carril
   de filtros. El `alt` lleva el código de país, así que un CDN bloqueado deja el
-  código a la vista. **Pendiente:** no salen al imprimir (TASK-011/AC-007).
+  código a la vista.
+- **C-UI-003.** Las banderas van **dentro del archivo**, rasterizadas a PNG de
+  48×36 (57 KB las 87 de EMEA). Pedidas a un CDN no se imprimían —cero imágenes
+  en el PDF— y este archivo viaja por correo y se abre desde el disco: una
+  dependencia de red para un icono es una dependencia que un día no está. Los
+  SVG oficiales suman 653 KB y ese peso son escudos que a 18 píxeles no se ven;
+  la mediana del resto son 302 bytes. Se rasterizan con un motor de PDF, **no se
+  dibujan a mano**: un color inventado en la bandera de un país se nota.
 
 ## Pruebas / verificación
 
