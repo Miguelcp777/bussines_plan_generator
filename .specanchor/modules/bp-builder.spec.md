@@ -221,6 +221,13 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   la mediana del resto son 302 bytes. Se rasterizan con un motor de PDF, **no se
   dibujan a mano**: un color inventado en la bandera de un país se nota.
 
+- **C-PRINT-006.** La portada llena su hoja: título arriba y ficha abajo
+  (`margin-top:auto` sobre la ficha, no `space-between`, que desperdiga los cinco
+  bloques). Su altura va en **`vh`, nunca en milímetros**: el tamaño de papel lo
+  elige quien imprime —A4 aquí, Letter por defecto en Chrome, 18 mm menos— y una
+  medida fija deja blanco en uno o empuja a una segunda hoja en el otro.
+  Verificado en los dos papeles: 9 páginas y portada al 93 %.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

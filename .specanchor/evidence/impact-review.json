@@ -1,58 +1,58 @@
 {
-  "revision": "70eb0ccfc70f0d0e01416a0259c42ae323230c19",
-  "task_spec": ".specanchor/tasks/TASK-013.spec.md",
+  "revision": "fde081e4489e413bf9922a247f46fffb97323e25",
+  "task_spec": ".specanchor/tasks/TASK-014.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
-      "kind": "behavior_preserving",
+      "kind": "contract",
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "Tres textos pasan a concordar en numero: 'eligible month(s)' en el formulario y la fila de oportunidades, y 'month(s)' en la fila de T&M. Ninguna cifra cambia y ningun contrato se toca; el diff son 3 lineas.",
+      "rationale": "C-PRINT-006: la portada llena la hoja, con la ficha empujada abajo y la altura en vh para que valga en A4 y en Letter. Solo presentacion; ninguna cifra cambia.",
       "evidence": [
-        ".specanchor/tasks/TASK-013.spec.md"
+        ".specanchor/tasks/TASK-014.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-013.spec.md",
+      "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea ligera de este cambio, con los tres textos comprobados con un mes y con nueve.",
+      "rationale": "Contrato nuevo de impresion para la portada.",
       "evidence": [
-        ".specanchor/tasks/TASK-013.spec.md"
+        ".specanchor/tasks/TASK-014.spec.md"
       ]
     },
     {
-      "path": ".specanchor/findings/0002-plurales-de-meses.md",
-      "kind": "correction",
+      "path": ".specanchor/tasks/TASK-014.spec.md",
+      "kind": "requirement",
       "specs": [],
-      "rationale": "El hallazgo queda cerrado, anotando que uno de los cuatro no era un defecto y por que.",
+      "rationale": "La tarea, verificada generando el PDF en los dos tamanos de papel.",
       "evidence": [
-        ".specanchor/tasks/TASK-013.spec.md"
+        ".specanchor/tasks/TASK-014.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-013/REQ-001",
-      "acceptance": "TASK-013/AC-001",
-      "verification": "Los tres textos con m=1 y m=9 sobre el plan real",
+      "requirement": "TASK-014/AC-001",
+      "acceptance": "TASK-014/AC-001",
+      "verification": "Medir el bloque de portada en el PDF",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-013.spec.md"
+      "evidence": ".specanchor/tasks/TASK-014.spec.md"
     },
     {
-      "requirement": "TASK-013/REQ-002",
-      "acceptance": "TASK-013/AC-002",
-      "verification": "grep del patron sin condicional",
+      "requirement": "TASK-014/AC-003",
+      "acceptance": "TASK-014/AC-003",
+      "verification": "Generar el PDF en Letter y en A4",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-013.spec.md"
+      "evidence": ".specanchor/tasks/TASK-014.spec.md"
     },
     {
-      "requirement": "TASK-013/REQ-003",
-      "acceptance": "TASK-013/AC-003",
-      "verification": "git diff --stat",
+      "requirement": "TASK-014/AC-004",
+      "acceptance": "TASK-014/AC-004",
+      "verification": "Primer texto de la pagina 2",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-013.spec.md"
+      "evidence": ".specanchor/tasks/TASK-014.spec.md"
     }
   ]
 }

@@ -733,7 +733,19 @@ table.rt .r{text-align:right;font-variant-numeric:tabular-nums}
   /* Un encabezado solo al pie de una página no dice nada de lo que sigue. */
   .rs h2, .rs h3{break-after:avoid; page-break-after:avoid}
   .rs p, .rs li{orphans:3; widows:3}
-  .cov{page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* La portada ocupaba un tercio de la hoja y el salto dejaba el resto en blanco:
+     un hueco que parece un fallo de maquetación. Que llene la página, con el
+     título arriba y la ficha abajo, es lo que hace una portada.
+     262 mm es el área útil exacta (A4 297 − 14 arriba − 21 abajo); se deja en
+     255 para que un redondeo no la empuje a una segunda hoja. */
+  .cov{page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    min-height:calc(100vh - 35mm);display:flex;flex-direction:column;box-sizing:border-box}
+  /* `margin-top:auto` empuja ABAJO solo la ficha. Con `justify-content:space-between`
+     se separaban los cinco hijos por igual y la portada quedaba desperdigada.
+     Y la altura va en `vh`, no en milímetros: el tamaño de hoja lo elige quien
+     imprime —A4 aquí, Letter por defecto en Chrome— y una medida fija deja
+     blanco en una y empuja a una segunda hoja en la otra. */
+  .cov .cm{margin-top:auto}
   @page{margin:14mm 14mm 21mm}
 
   /* `bottom:-14mm` pretendía meterlo en el margen inferior, y lo que hace Chrome
