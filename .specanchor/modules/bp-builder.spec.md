@@ -130,6 +130,16 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   contrato sigue vivo. Quien espere que el cliente se vaya antes cambia la fecha
   a mano.
 
+- **C-PERF-004.** Un libro que costó más de 2 s se guarda parseado en
+  IndexedDB, con clave **nombre + tamaño + fecha de modificación**. Soltar el
+  mismo archivo otra vez no lo reparsea: medido, **39 s → 29 ms**. Un archivo
+  distinto o reexportado cambia la clave y se lee de cero, y la pantalla dice
+  cuándo ha usado la copia. La base instalada (~400 ms) no se cachea: no
+  compensa.
+- **C-PERF-005.** El aplazamiento previo al parseo no puede depender solo de
+  `requestAnimationFrame`: en una pestaña en segundo plano no se dispara y la
+  carga se queda esperando a que alguien mire. Compite con un temporizador.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

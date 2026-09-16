@@ -2372,6 +2372,28 @@ function loadFile(file){
    Para comparar: la installed base son 7,2 MB con 3 hojas y tarda 387 ms. No es
    el tamaño; son las hojas.
    ============================================================ */
+/* ============================================================
+   NO PARSEAR DOS VECES EL MISMO LIBRO
+
+   En `file://` —que es como se abre hoy— Chrome no deja crear workers, ni
+   siquiera desde un blob, así que el parseo no se puede sacar del hilo
+   principal: ese .xlsb va a congelar la pestaña ~23 s la primera vez que se
+   lee, y no hay forma de evitarlo desde aquí.
+
+   Lo que sí se puede quitar son todas las veces siguientes. El Reclass cambia
+   una vez por trimestre y se carga muchas más veces que eso.
+
+   La identidad es nombre + tamaño + fecha de modificación. No es un hash del
+   contenido —calcularlo costaría casi lo que ahorra— pero los tres juntos
+   cambian en cuanto alguien reexporta el archivo, que es el caso que importa
+   no confundir.
+   ============================================================ */
+const claveDeArchivo = (pref, f) => `${pref}|${f.name}|${f.size}|${f.lastModified}`;
+const CACHE_DESDE_MS = 2000;      // solo se guarda lo que costó caro
+
+function cacheLibroGet(clave){ return idbGet(clave); }
+function cacheLibroPut(clave, datos){ return idbPut(clave, datos); }
+
 function nombresDeHojas(buf){
   return XLSX.read(buf, { type:'array', bookSheets:true }).SheetNames;
 }
@@ -2387,7 +2409,24 @@ function leerHoja(buf, nombres, elegir){
    que cederlo de verdad: escribir en el DOM y seguir con trabajo síncrono no
    dibuja nada. Dos fotogramas es lo que hace falta. */
 function trasPintar(fn){
-  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(fn, 0)));
+  let hecho = false;
+  const unaVez = () => { if (hecho) return; hecho = true; fn(); };
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(unaVez, 0)));
+  /* Con la pestaña en segundo plano requestAnimationFrame no se dispara, así que
+     esperar solo a los fotogramas deja la carga colgada hasta que alguien vuelve
+     a mirar. El temporizador la saca de ahí; si la pestaña está delante gana el
+     fotograma y el aviso se pinta igual. */
+  setTimeout(unaVez, 250);
+}
+
+/* Usar una copia guardada y no decirlo es cómo alguien acaba mirando datos de
+   otro trimestre convencido de que acaba de cargarlos. */
+function avisoDesdeCopia(hit){
+  const cuando = hit.guardadoEn ? new Date(hit.guardadoEn).toLocaleString('en-GB') : 'earlier';
+  return `<div class="note i"><span class="ni2">⚡</span><div>Read from the copy this browser
+    kept when you first loaded <b>this exact file</b> — same name, size and date — so the
+    ${hit.ms ? Math.round(hit.ms/1000) + '-second' : 'slow'} parse was skipped.
+    Saved ${esc(cuando)}. A different or re-exported file is read from scratch.</div></div>`;
 }
 
 /* Un libro con muchas hojas va a congelar la pestaña. Decirlo antes es la
@@ -2516,18 +2555,36 @@ function loadReclass(file){
       }
       if (typeof XLSX === 'undefined') throw new Error('Spreadsheet reader did not load.');
       const buf = new Uint8Array(e.target.result);
-      const nombres = nombresDeHojas(buf);
+      const clave = claveDeArchivo('rc', file);
       const elegir = ns => ns.find(n => /^db$/i.test(String(n).trim()))
                         || ns.find(n => /\bdb\b/i.test(n));
-      if (nombres.length > 3)
-        msg(avisoLibroLento(file.name, nombres.length, elegir(nombres) || nombres[0]));
-      trasPintar(() => {
-        try{
-          const r = leerHoja(buf, nombres, elegir);
-          ingestReclass(r.matriz, file.name, nombres, r.hoja);
-          msg(reclassSummaryHTML());
-        }catch(err){ fallo(err); }
+      cacheLibroGet(clave).then(hit => {
+        if (hit && hit.matriz && hit.matriz.length){
+          ingestReclass(hit.matriz, file.name, hit.nombres || [], hit.hoja);
+          msg(reclassSummaryHTML() + avisoDesdeCopia(hit));
+          return;
+        }
+        const nombres = nombresDeHojas(buf);
+        if (nombres.length > 3)
+          msg(avisoLibroLento(file.name, nombres.length, elegir(nombres) || nombres[0]));
+        trasPintar(() => {
+          try{
+            const t0 = performance.now();
+            const r = leerHoja(buf, nombres, elegir);
+            const coste = performance.now() - t0;
+            ingestReclass(r.matriz, file.name, nombres, r.hoja);
+            msg(reclassSummaryHTML());
+            /* Se guarda lo que costó caro, y solo eso. */
+            if (coste >= CACHE_DESDE_MS)
+              cacheLibroPut(clave, { matriz:r.matriz, hoja:r.hoja, nombres,
+                                     ms:Math.round(coste), guardadoEn:new Date().toISOString() });
+          }catch(err){ fallo(err); }
+        });
       });
+      /* No hace falta un .catch() aquí: idbGet se traga sus propios errores y
+         resuelve null, así que sin IndexedDB se entra igual por el camino de
+         arriba y se parsea como siempre. Un .catch() que reintentara el parseo
+         leería dos veces un archivo que ya ha fallado una. */
     }catch(err){ fallo(err); }
   };
   isCsv ? rd.readAsText(file,'ISO-8859-1') : rd.readAsArrayBuffer(file);
