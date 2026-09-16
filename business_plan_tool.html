@@ -5079,7 +5079,7 @@ function calcOpp(){
   const cero = notaSinImpacto(val, p);
   if (cero){ box.innerHTML = cero; return; }
   box.innerHTML = m>0
-    ? `Revenue can start <b>${MONTHS[mon-1]} ${yr}</b> → <b>${m}</b> eligible months in ${S.cy.year}, at <b>${p}%</b> probability.
+    ? `Revenue can start <b>${MONTHS[mon-1]} ${yr}</b> → <b>${m}</b> eligible month${m===1?'':'s'} in ${S.cy.year}, at <b>${p}%</b> probability.
        <span class="fx">Expected opportunity = ${money(val)} × ${p}% × ${m}/12 = ${money(imp)}</span>`
     : `Start falls in <b>${MONTHS[mon-1]} ${yr}</b> — after ${S.cy.year}. <b>No revenue in this BP year</b>; it carries to the next.`;
 }
@@ -5157,7 +5157,7 @@ function renderOpps(){
       ${e.desc?`<div class="rd">${esc(e.desc)}</div>`:''}
       <div class="rmeta">
         <span>Starts <b>${MON3[e.mon-1]} ${e.yr}</b></span>
-        <span>${m>0?`<b>${m}</b> eligible months in ${S.cy.year}`:`<b>next cycle</b>`}</span>
+        <span>${m>0?`<b>${m}</b> eligible month${m===1?'':'s'} in ${S.cy.year}`:`<b>next cycle</b>`}</span>
         ${e.dep?`<span>Depends on: <b>${esc(e.dep)}</b></span>`:''}
         ${e.own?`<span>Owner: <b>${esc(e.own)}</b></span>`:''}
         ${e.rev?`<span>Reviewed <b>${esc(e.rev)}</b></span>`:''}
@@ -5387,7 +5387,7 @@ function renderTm(){
         ${e.plat?`<span class="pill n">${esc(e.plat)}</span>`:''}</div>
       <div class="rmeta">
         <span>From <b>${MON3[clamp(e.mon,1,12)-1]} ${e.yr}</b></span>
-        <span>${m>0?`<b>${m}</b> months in ${S.cy.year}`:`<b>outside</b> ${S.cy.year}`}</span>
+        <span>${m>0?`<b>${m}</b> month${m===1?'':'s'} in ${S.cy.year}`:`<b>outside</b> ${S.cy.year}`}</span>
         ${e.basis?`<span>Basis: <b>${esc(e.basis)}</b></span>`:`<span class="c-o">no basis recorded</span>`}
         ${e.own?`<span>Owner: <b>${esc(e.own)}</b></span>`:`<span class="c-o">unassigned</span>`}
       </div></div>

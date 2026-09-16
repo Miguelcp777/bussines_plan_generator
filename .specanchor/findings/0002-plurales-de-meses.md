@@ -1,7 +1,7 @@
 # Hallazgo 0002 · «1 months» en tres registros más
 
 **Encontrado:** 16 de septiembre de 2026, al arreglar el registro de riesgos
-(TASK-004) · **Estado:** abierto · fuera de alcance
+(TASK-004) · **Estado:** **cerrado** el 16 de septiembre de 2026 por `tasks/TASK-013.spec.md`
 **Gravedad:** baja — cosmética, pero se ve en pantallas que se enseñan
 
 ## Qué pasa
@@ -22,7 +22,14 @@ ensanchar un cambio revisable:
 
 El arreglo es el mismo en los cuatro: `month${m===1?'':'s'}`.
 
-## Por qué no se hizo aquí
+## Cómo se cerró
+
+`TASK-013`. Tres de los cuatro arreglados; el de T&M —«1 of 12 months»— se dejó
+como estaba porque **no está mal**: se lee bien en inglés y ponerlo en singular
+lo habría estropeado. Un hallazgo que se cierra sin mirar cada caso es como no
+haberlo abierto.
+
+## Por qué no se hizo en TASK-004
 
 TASK-004 iba de dos defectos concretos del registro de riesgos. Meter cuatro
 cambios de texto en otras dos pantallas habría hecho el diff más difícil de
