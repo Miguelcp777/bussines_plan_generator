@@ -3137,7 +3137,7 @@ function syncRiskFromRecord(r, why){
   }
   /* keep the two in step until someone edits the entry by hand, then leave it alone */
   if (e.auto && !e.manual){
-    e.prob = lossProb || e.prob;
+    e.prob = lossProb;                    // el 0 también se propaga: ver TASK-006
     e.mon = mon; e.yr = yr;
     e.usd = (r._usd || 0) + (r.bundleUsd || 0);
     if (reasonOf(r)) e.desc = reasonOf(r);
@@ -4519,6 +4519,10 @@ function setDec(key, field, val){
       : w > 0 ? `${r.account} · from ${when} · ${money(w)} ${kind} in ${S.cy.year}`
               : `${r.account} · from ${when} · no effect on ${S.cy.year}`);
   }
+  if (r && field === 'prob' && decOf(r).st === 'risk' && (d.prob ?? 100) >= 100){
+    toast(`${r.account} is marked At risk but Renew % is now 100 — that means it renews in full, `
+        + `so nothing is weighted against ${S.cy.year}. Lower it to say how much you expect to lose.`, true);
+  }
   if (r && field === 'st'){
     const lost = sum(lossMonths(r, 1));
     if (val === 'lost' || val === 'uninstall'){
@@ -4804,6 +4808,9 @@ function renderRisks(){
       <div class="rm">${esc(e.sn||'—')}${e.plat?' · '+esc(e.plat):''}${e.country?' · '+esc(e.country):''}${
         e.auto?` · <span class="${e.manual?'c-m':'c-b'}">${e.manual?'raised from the installed base, since edited here':'raised from the installed base — edit it here and it stops following the record'}</span>`:''}</div>
       <div class="rd">${esc(e.desc)}</div>
+      ${e.prob === 0 ? `<div class="rd c-o">⚠ This system is flagged <b>At risk</b> but its
+        <b>Renew %</b> is 100 — the record says it will renew, so nothing is weighted.
+        Lower Renew % on the installed base row to make this count.</div>` : ''}
       <div class="rmeta">
         <span>Event <b>${MON3[e.mon-1]} ${e.yr}</b></span>
         <span>${m>0?`<b>${m}</b> month${m===1?'':'s'} in ${S.cy.year}`:`<b>no impact</b> in ${S.cy.year}`}</span>

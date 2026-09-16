@@ -1,6 +1,6 @@
 {
-  "revision": "fa10aafe0d65fdba21475ade9a54ff8f5bb91cdf",
-  "task_spec": ".specanchor/tasks/TASK-005.spec.md",
+  "revision": "5c63a69c8d11bf47f0e83d7fee5015e3ffa704a4",
+  "task_spec": ".specanchor/tasks/TASK-006.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,65 +8,58 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-PERF-004: cachea en IndexedDB el libro que costo mas de 2 s, con clave nombre+tamano+fecha, y lo dice en pantalla. C-PERF-005: el aplazamiento previo al parseo ya no depende solo de requestAnimationFrame, que no se dispara en segundo plano. Las cifras no cambian.",
+      "rationale": "C-RISK-005: la entrada automatica sigue al equipo tambien hasta probabilidad cero; antes 'lossProb || e.prob' conservaba un valor viejo y la entrada podia sobrestimar sin poder bajarla. C-RISK-006: se avisa de la contradiccion At risk con Renew % 100. El motor no se toca.",
       "evidence": [
-        ".specanchor/tasks/TASK-005.spec.md"
+        ".specanchor/tasks/TASK-006.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Dos contratos nuevos de rendimiento con sus medidas.",
+      "rationale": "Dos contratos nuevos del registro de riesgos.",
       "evidence": [
-        ".specanchor/tasks/TASK-005.spec.md"
+        ".specanchor/tasks/TASK-006.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-005.spec.md",
+      "path": ".specanchor/tasks/TASK-006.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, con la evidencia de los cinco criterios y los dos fallos propios encontrados al verificar.",
+      "rationale": "La tarea, reproducida sobre el plan real del usuario, con las dos causas separadas.",
       "evidence": [
-        ".specanchor/tasks/TASK-005.spec.md"
+        ".specanchor/tasks/TASK-006.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-005/REQ-001",
-      "acceptance": "TASK-005/AC-001",
-      "verification": "Cronometrar dos cargas del mismo .xlsb",
+      "requirement": "TASK-006/REQ-001",
+      "acceptance": "TASK-006/AC-001",
+      "verification": "Subir y bajar Renew % sobre el equipo 1109-70050",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-005.spec.md"
+      "evidence": ".specanchor/tasks/TASK-006.spec.md"
     },
     {
-      "requirement": "TASK-005/REQ-002",
-      "acceptance": "TASK-005/AC-003",
-      "verification": "Cambiar lastModified y observar la rama tomada",
+      "requirement": "TASK-006/REQ-002",
+      "acceptance": "TASK-006/AC-002",
+      "verification": "Leer la entrada renderizada y el aviso al teclear",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-005.spec.md"
+      "evidence": ".specanchor/tasks/TASK-006.spec.md"
     },
     {
-      "requirement": "TASK-005/REQ-003",
-      "acceptance": "TASK-005/AC-004",
-      "verification": "Listar claves de IndexedDB",
+      "requirement": "TASK-006/REQ-003",
+      "acceptance": "TASK-006/AC-003",
+      "verification": "Entrada manual con prob 77",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-005.spec.md"
+      "evidence": ".specanchor/tasks/TASK-006.spec.md"
     },
     {
-      "requirement": "TASK-005/REQ-004",
-      "acceptance": "TASK-005/AC-005",
-      "verification": "idbOpen rechazando",
+      "requirement": "TASK-006/REQ-004",
+      "acceptance": "TASK-006/AC-004",
+      "verification": "Cargar BP2026_Iberia_09162026.json sin tocar nada",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-005.spec.md"
-    },
-    {
-      "requirement": "TASK-005/REQ-005",
-      "acceptance": "TASK-005/AC-002",
-      "verification": "Comparar cifras de las dos cargas",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-005.spec.md"
+      "evidence": ".specanchor/tasks/TASK-006.spec.md"
     }
   ]
 }

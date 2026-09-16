@@ -140,6 +140,17 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   `requestAnimationFrame`: en una pestaña en segundo plano no se dispara y la
   carga se queda esperando a que alguien mire. Compite con un temporizador.
 
+- **C-RISK-005.** Una entrada automática sigue al equipo **también cuando la
+  probabilidad de pérdida baja a cero**. `e.prob = lossProb || e.prob` trataba
+  el 0 como «sin valor» y conservaba el anterior: bajar «Renew %» a 0 hacía
+  descontar, y devolverlo a 100 —renueva seguro— dejaba la entrada descontando
+  igual, sin forma de bajarla desde el equipo. Las entradas editadas a mano
+  (`manual`) siguen intactas.
+- **C-RISK-006.** *At risk* con «Renew %» a 100 es una contradicción —riesgo
+  cero— y se dice en los dos sitios: en la entrada del registro y al teclearlo.
+  El campo se llama «Renew %», así que un 100 ahí se lee fácil como «riesgo al
+  100», que es justo lo contrario.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado
