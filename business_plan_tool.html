@@ -152,6 +152,13 @@ html[data-theme="dark"]{--jjmark:#fff}
 .xg .btn:last-child{border-top-right-radius:var(--rs);border-bottom-right-radius:var(--rs);
   border-left:0;color:var(--mut);font-weight:600}
 .xg .btn:last-child:hover{color:var(--tx)}
+/* Bandera: pequeña, con un filo para que no se pierda sobre fondo claro, y con
+   `print-color-adjust` porque si no el navegador la descarta al imprimir. */
+.bnd{width:1.15em;height:.86em;object-fit:cover;border-radius:2px;vertical-align:-1px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.14);margin-right:5px;flex:none;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.bnd-c{font-variant-numeric:tabular-nums}
+.doc .bnd{margin-right:4px}
 .regi .rvs2{display:block;font-size:.68rem;color:var(--mut);margin-top:1px}
 /* Alcance puesto: el comparador sigue siendo toda EMEA, pero solo en agregado. Fuera
    todo lo que enumera países o clientes uno a uno. */
@@ -3647,8 +3654,16 @@ function forecastSplit(records){
     const v = sum(eventMonths(e, 1, 'risk')), sh = shareOf(e);
     o.dL += v * sh.d; o.bL += v * sh.b;
   });
+  /* Una oportunidad que declara su corriente manda sobre cualquier inferencia:
+     la declaró una persona. `shareOf` solo sabe repartir cuando la entrada
+     apunta a un equipo existente, y devolvía TODO a directo cuando no —que es
+     el caso de casi toda venta nueva—, así que una oportunidad de bundle
+     acababa contada como directa en la sección 2. */
+  const shareOfOpp = e => e.stream === 'bundle' ? { d:0, b:1 }
+                        : e.stream === 'direct' ? { d:1, b:0 }
+                        : shareOf(e);
   if (S.tog.opp) S.opps.filter(inScope).forEach(e => {
-    const v = sum(eventMonths(e, 1, 'opp')), sh = shareOf(e);
+    const v = sum(eventMonths(e, 1, 'opp')), sh = shareOfOpp(e);
     o.dO += v * sh.d; o.bO += v * sh.b;
   });
   if (S.tog.eol) S.eol.forEach(c => {
@@ -3938,12 +3953,44 @@ function buildFilters(){
     S.rows.forEach(r=>{ const v=fn(r)||'—'; counts[v]=(counts[v]||0)+1; });
     const vals = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
     h += `<details class="fsec" ${gi<3?'open':''}><summary>${lbl}<span class="n" id="fn-${k}"></span></summary><div class="fl">` +
-      vals.map(v=>`<label class="fi"><input type="checkbox" value="${esc(v)}" onchange="onFilt('${k}',this)"><span>${esc(v)}</span><span class="fn">${counts[v]}</span></label>`).join('') +
+      vals.map(v=>`<label class="fi"><input type="checkbox" value="${esc(v)}" onchange="onFilt('${k}',this)"><span>${
+        k==='country' ? bandera(v)+esc(v) : esc(v)}</span><span class="fn">${counts[v]}</span></label>`).join('') +
       `</div></details>`;
   });
   h += `<div class="fp-f"><button class="btn sm" style="width:100%" onclick="clearFilters()">Clear all filters</button></div>`;
   $('filtPanel').innerHTML = h;
 }
+/* ============================================================
+   BANDERAS
+
+   Las banderas emoji NO se dibujan en Windows: pintadas en un canvas dan un solo
+   color —las dos letras dentro de una caja— frente a los 130 de un emoji normal.
+   Medido antes de escribir esto. Así que van SVG reales.
+
+   Se piden como <img> directamente, no con la hoja de estilos de flag-icons: esa
+   librería usa la clase `.fi`, que en esta aplicación ya es la de cada casilla
+   del carril de filtros, y cargarla las rompería todas.
+
+   Y si el CDN está bloqueado —escenario real en una red corporativa— el `alt`
+   deja el código de país a la vista. No hace falta detectar nada: el hueco nunca
+   queda vacío.
+   ============================================================ */
+const FLAG_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/';
+/* El mapa de clusters usa UK además de GB; el archivo se llama gb. */
+const FLAG_ALIAS = { UK:'GB', EL:'GR' };
+function bandera(cc){
+  const c = String(cc || '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(c)) return '';
+  const f = (FLAG_ALIAS[c] || c).toLowerCase();
+  /* Sin `loading="lazy"`: una imagen diferida no llega a cargarse al imprimir y
+     el PDF salía sin una sola bandera — comprobado, cero imágenes incrustadas.
+     No cuesta lo que parece: el navegador pide cada bandera UNA vez por país,
+     no por fila, así que son tres peticiones en Iberia. */
+  return `<img class="bnd" src="${FLAG_BASE}${f}.svg" alt="${c}" title="${c}">`;
+}
+/* Bandera + código, que es como se lee de un vistazo en una tabla. */
+const paisConBandera = cc => cc ? `${bandera(cc)}<span class="bnd-c">${esc(cc)}</span>` : '—';
+
 const CLS_LBL = { secured:'Secured', due:'Due in BP year', overdue:'Overdue renewal',
                   expired:'Long expired', bundle:'Bundle funded', uncovered:'No revenue' };
 const PAYER_LBL = { direct:'Direct — customer pays', bundle:'Bundle — reclassed', both:'Both streams', none:'No revenue' };
@@ -4043,7 +4090,13 @@ function renderDash(){
   if (S.filt.cluster.size) parts.push([...S.filt.cluster].join(', '));
   if (S.filt.country.size) parts.push([...S.filt.country].join(', '));
   if (S._dashCtry) parts.push(S._dashCtry);
-  setTx('dashScope', (parts.join(' · ') || 'All regions') + ` · ${rows.length.toLocaleString()} records · ${S.cy.type}${S.cy.year} · ${S.cur}`);
+  /* El panel decía «All regions» sobre el recorte de un manager, igual que el
+     informe: los filtros están vacíos porque el recorte lo hizo buildRecords. */
+  const paises = uniq(rows.map(r=>r.country)).filter(Boolean).sort();
+  const nombre = parts.join(' · ') || (paises.length && paises.length <= 6 ? paises.join(', ')
+    : paises.length ? `${scopeLabel()} · ${paises.length} countries` : 'All regions');
+  setHTML('dashScope', (paises.length <= 12 ? paises.map(bandera).join('') : '') + esc(nombre)
+    + ` · ${rows.length.toLocaleString()} records · ${S.cy.type}${S.cy.year} · ${S.cur}`);
 
   const sp = streamSplit(rows);
   const actual = sc.baseline.B;                       // what today's contracts are worth
@@ -4405,7 +4458,7 @@ function renderBase(){
     const clsPill = { secured:'g', due:'o', overdue:'r', expired:'n', uncovered:'n' }[r._cls] || 'n';
     h += `<tr class="${r._cls==='expired'?'dim':''}" style="${loss>0&&net<=0?'opacity:.62':''}">
       <td><span class="tnm" title="${esc(r.account)}">${esc(r.account)}</span><span class="tsub">${esc(r.city||'')}${r.contract?' · '+esc(r.contract):''}</span></td>
-      <td class="c mono">${esc(r.country)}</td>
+      <td class="c mono">${paisConBandera(r.country)}</td>
       <td>${esc(r.platform)}<span class="tsub">${esc(r.model||'')}</span></td>
       <td class="mono">${esc(r.serial)}</td>
       <td>${esc(r.coverage)}</td>
@@ -5394,7 +5447,7 @@ function movTblLost(list, mode, limit){
     return `<tr${app?` onclick="jumpTo('${esc(r.serial)}')" style="cursor:pointer"`:''}>
       <td class="mono">${esc(r.serial)}</td>
       <td>${app?`<span class="tnm">${esc(r.account)}</span>`:`<b>${esc(r.account)}</b>`}</td>
-      <td class="${app?'c mono':''}">${esc(r.country)}</td>
+      <td class="${app?'c mono':''}">${paisConBandera(r.country)}</td>
       <td>${esc(r.platform)}${app?`<span class="tsub">${esc(r.model||'')}</span>`:''}</td>
       ${app?`<td><span class="pill ${PAYER_PILL[r.payer]||'n'}">${r.payer==='direct'?'Direct':r.payer==='bundle'?'Bundle':r.payer==='both'?'Both':'—'}</span></td>`:''}
       <td>${app?`<span class="pill ${x.d.st==='risk'?'o':'r'}">${DEC_LBL[x.d.st]||x.d.st}</span>`
@@ -5486,7 +5539,7 @@ function movTblOpp(mode, limit){
     return `<tr${app?` onclick="go('opp');editOpp('${e.id}')" style="cursor:pointer"`:''}>
       <td class="mono">${esc(e.sn||'—')}</td>
       <td>${app?`<span class="tnm">${esc(e.cust)}</span>`:`<b>${esc(e.cust)}</b>`}</td>
-      <td class="${app?'c mono':''}">${esc(e.country||'—')}</td><td>${esc(e.plat||'—')}</td>
+      <td class="${app?'c mono':''}">${paisConBandera(e.country)}</td><td>${esc(e.plat||'—')}</td>
       <td>${esc(e.cov||'—')}</td>
       <td>${app?`<span class="pill ${oppStream(e)==='bundle'?'b':'n'}">${STREAM_LBL[oppStream(e)]}</span>`
              :STREAM_LBL[oppStream(e)]}${!e.stream?`<span class="${app?'tsub':''}"${app?'':' style="color:#8a939f;display:block"'}>assumed</span>`:''}</td>
@@ -6759,7 +6812,7 @@ function renderIns(){
   setTx('insExpTot', money(sum(expd,rev)));
   $('tblExpired').innerHTML = `<thead><tr><th>Account</th><th class="c">Ctry</th><th>Platform</th><th>Coverage</th>
     <th>Ended</th><th class="r">Days ago</th><th class="r">Annual value</th></tr></thead><tbody>` +
-    (expd.length ? expd.slice(0,150).map(r=>`<tr><td><span class="tnm">${esc(r.account)}</span></td><td class="c mono">${esc(r.country)}</td>
+    (expd.length ? expd.slice(0,150).map(r=>`<tr><td><span class="tnm">${esc(r.account)}</span></td><td class="c mono">${paisConBandera(r.country)}</td>
       <td>${esc(r.platform)}</td><td>${esc(r.coverage)}</td><td>${fmtDate(r.end)}</td>
       <td class="r c-o">${r._days!=null?Math.abs(r._days):'—'}</td><td class="r"><b>${money(rev(r))}</b></td></tr>`).join('')
       : `<tr><td colspan="7" class="empty">No long-expired contracts in scope</td></tr>`) + `</tbody>`;
@@ -7054,7 +7107,7 @@ function dqDrill(c, idx){
     <th class="r">Value</th><th>What is wrong</th></tr></thead><tbody>` +
     c.items.slice(0,200).map(it => { const r = it.r; return `<tr onclick="jumpTo('${esc(r.serial)}')">
       <td><span class="tnm">${esc(r.account)}</span><span class="tsub">${esc(r.city||'')}</span></td>
-      <td class="c mono">${esc(r.country)}</td><td class="mono">${esc(r.serial)}</td>
+      <td class="c mono">${paisConBandera(r.country)}</td><td class="mono">${esc(r.serial)}</td>
       <td>${esc(r.coverage)}</td><td class="mono">${esc(r.contract||'—')}</td>
       <td>${r.start?fmtDate(r.start):'<span class="c-r">—</span>'}</td>
       <td>${r.end?fmtDate(r.end):'<span class="c-r">—</span>'}</td>
@@ -8140,9 +8193,19 @@ function narrative(sc, g, at, rows){
 function openReport(){
   const rows = dashRows(), sc = scenarios(rows), g = grossFigures(rows), at = attachment(rows);
   const dq = dqRun();
+  /* El alcance se lee de los REGISTROS que se están informando, no solo de los
+     filtros: con un manager dentro, el recorte lo hace buildRecords y S.filt
+     está vacío, así que la cabecera decía «All regions» sobre 412 equipos de
+     Iberia. Los filtros siguen mandando cuando los hay, porque nombran la
+     intención mejor que una lista de países. */
+  const paisesEnAlcance = uniq(rows.map(r => r.country)).filter(Boolean).sort();
   const scopeTxt = (S.filt.cluster.size ? [...S.filt.cluster].join(', ')
     : S.filt.country.size ? [...S.filt.country].join(', ')
-    : S._dashCtry ? S._dashCtry : 'All regions');
+    : S._dashCtry ? S._dashCtry
+    : paisesEnAlcance.length === 0 ? 'No countries in scope'
+    : paisesEnAlcance.length <= 6 ? paisesEnAlcance.join(', ')
+    : currentUser() && !seesAll(currentUser()) ? `${scopeLabel()} · ${paisesEnAlcance.length} countries`
+    : `${paisesEnAlcance.length} countries`);
   const title = ({BP:'Business Plan', JU:'June Update', NU:'November Update', FC:'Forecast'})[S.cy.type];
   const sub = ({BP:'Annual maintenance contract revenue forecast',
     JU:'Mid-year revenue review and forecast adjustment',

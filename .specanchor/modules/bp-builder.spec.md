@@ -198,6 +198,22 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   tabla y en el pie. Una entrada anterior a esto no tiene corriente: cuenta como
   directa y **se marca «assumed»**, en la fila y en el texto.
 
+- **C-OPP-004.** En el reparto por corrientes de la sección 2, la corriente
+  **declarada** en una oportunidad manda sobre la inferida del equipo al que
+  apunta. `shareOf` devuelve todo a directo cuando la entrada no apunta a
+  ninguno —el caso de casi toda venta nueva—, y así una oportunidad de bundle se
+  contaba como directa.
+- **C-UI-001.** El alcance que se enseña —informe y panel— se lee de los
+  **registros que se están informando**, no solo de `S.filt`: con un manager
+  dentro el recorte lo hace `buildRecords` y los filtros están vacíos, así que
+  se leía «All regions» sobre 412 equipos de Iberia.
+- **C-UI-002.** Las banderas van como **SVG del CDN en un `<img>`**, no como
+  emoji: en Windows una bandera emoji se dibuja como dos letras en una caja
+  —medido, un solo color contra los 130 de un emoji—. Tampoco se carga la hoja
+  de `flag-icons`: su clase `.fi` es la misma que la de las casillas del carril
+  de filtros. El `alt` lleva el código de país, así que un CDN bloqueado deja el
+  código a la vista. **Pendiente:** no salen al imprimir (TASK-011/AC-007).
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado

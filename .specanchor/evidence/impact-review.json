@@ -1,6 +1,6 @@
 {
-  "revision": "7e761f1b194ee3e0bf120e25962ed5c10c736ca3",
-  "task_spec": ".specanchor/tasks/TASK-010.spec.md",
+  "revision": "6697208d31663a5ad21fdbe19f5aa1ec9770a1cc",
+  "task_spec": ".specanchor/tasks/TASK-011.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,72 +8,51 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-OPP-001 a 003: plataforma y cobertura pasan a desplegables poblados desde la installed base; la corriente Direct/Bundle se deduce de como se paga esa cobertura en la flota, se ensena con su recuento y se puede corregir; el informe reparte la oportunidad en las dos corrientes. Las entradas anteriores cuentan como directas y se marcan.",
+      "rationale": "C-OPP-004: la corriente declarada en una oportunidad manda sobre la inferida, que devolvia todo a directo cuando la entrada no apunta a un equipo. C-UI-001: el alcance se lee de los registros informados y no solo de S.filt. C-UI-002: banderas como SVG del CDN en un img, con el codigo de pais en el alt; no se imprimen y queda dicho.",
       "evidence": [
-        ".specanchor/tasks/TASK-010.spec.md"
+        ".specanchor/tasks/TASK-011.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Tres contratos nuevos del registro de oportunidades.",
+      "rationale": "Tres contratos nuevos, uno de ellos con su pendiente escrito.",
       "evidence": [
-        ".specanchor/tasks/TASK-010.spec.md"
+        ".specanchor/tasks/TASK-011.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-010.spec.md",
+      "path": ".specanchor/tasks/TASK-011.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, con la evidencia de los seis criterios sobre el plan real.",
+      "rationale": "La tarea, con seis criterios en verde y uno en rojo declarado como tal.",
       "evidence": [
-        ".specanchor/tasks/TASK-010.spec.md"
+        ".specanchor/tasks/TASK-011.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-010/REQ-001",
-      "acceptance": "TASK-010/AC-001",
-      "verification": "Contenido del desplegable de plataforma contra los datos",
+      "requirement": "TASK-011/REQ-001",
+      "acceptance": "TASK-011/AC-001",
+      "verification": "forecastSplit con una oportunidad bundle, una direct y una sin corriente",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+      "evidence": ".specanchor/tasks/TASK-011.spec.md"
     },
     {
-      "requirement": "TASK-010/REQ-002",
-      "acceptance": "TASK-010/AC-002",
-      "verification": "Contenido del desplegable de cobertura contra los datos",
+      "requirement": "TASK-011/REQ-002",
+      "acceptance": "TASK-011/AC-003",
+      "verification": "Portada del informe con el alcance de Iberia y sin filtros",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+      "evidence": ".specanchor/tasks/TASK-011.spec.md"
     },
     {
-      "requirement": "TASK-010/REQ-003",
-      "acceptance": "TASK-010/AC-003",
-      "verification": "FEM - TA, PHC-DEMO y una cobertura inexistente",
+      "requirement": "TASK-011/REQ-003",
+      "acceptance": "TASK-011/AC-005",
+      "verification": "Banderas en carril, panel, tabla e informe en pantalla",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
-    },
-    {
-      "requirement": "TASK-010/REQ-004",
-      "acceptance": "TASK-010/AC-004",
-      "verification": "Cambiar la corriente a mano y guardar",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
-    },
-    {
-      "requirement": "TASK-010/REQ-005",
-      "acceptance": "TASK-010/AC-005",
-      "verification": "Tabla, pie y parrafo del informe",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
-    },
-    {
-      "requirement": "TASK-010/REQ-006",
-      "acceptance": "TASK-010/AC-006",
-      "verification": "Entrada sin cov ni stream",
-      "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-010.spec.md"
+      "evidence": ".specanchor/tasks/TASK-011.spec.md"
     }
   ]
 }
