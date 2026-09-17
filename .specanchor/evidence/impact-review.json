@@ -1,65 +1,74 @@
 {
-  "revision": "c57e49cf550ceafd96941f1ae92c8d3827e7a1cd",
-  "task_spec": ".specanchor/tasks/TASK-015.spec.md",
+  "revision": "8f0225635a52a496ac97158a1413bc1c849ac49f",
+  "task_spec": ".specanchor/tasks/TASK-016.spec.md",
   "files": [
     {
-      "path": "business_plan_tool.html",
+      "path": "business_plan_tool.ico",
       "kind": "contract",
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-FILT-001 y 002: el carril nace con todo marcado y cada grupo tiene un Select all de tres estados; un grupo completo no restringe ni se nombra, uno vacio no deja pasar nada. La pregunta pasa a un solo sitio, filtActivo, porque size>0 la respondia en nueve y con todo marcado siempre daria que si.",
+      "rationale": "Nuevo. El monograma de J&J sobre teja roja, siete tamanos de 16 a 256. Cierra la referencia colgando de build_exe.spec, que lo nombraba y no existia. C-UI-004.",
       "evidence": [
-        ".specanchor/tasks/TASK-015.spec.md"
+        ".specanchor/tasks/TASK-016.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Dos contratos nuevos del carril de filtros.",
+      "rationale": "C-UI-004: la identidad en dos formas, y el limite de que el icono de un .html lo pone Windows por tipo de archivo y no se cambia desde dentro.",
       "evidence": [
-        ".specanchor/tasks/TASK-015.spec.md"
+        ".specanchor/tasks/TASK-016.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-015.spec.md",
+      "path": ".specanchor/tasks/TASK-016.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, con los seis criterios verificados sobre el plan real y el fallo propio encontrado al verificar.",
+      "rationale": "La tarea, con lo que no tiene arreglo dicho antes que lo entregado.",
       "evidence": [
-        ".specanchor/tasks/TASK-015.spec.md"
+        ".specanchor/tasks/TASK-016.spec.md"
+      ]
+    },
+    {
+      "path": ".specanchor/module-map.json",
+      "kind": "requirement",
+      "specs": [],
+      "rationale": "El .ico pasa a bp-builder; sin fila aqui seria un archivo material huerfano y el guard fallaria, que es lo que tiene que hacer.",
+      "evidence": [
+        ".specanchor/tasks/TASK-016.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-015/REQ-001",
-      "acceptance": "TASK-015/AC-001",
-      "verification": "Estado del carril al cargar",
+      "requirement": "TASK-016/REQ-001",
+      "acceptance": "TASK-016/AC-001",
+      "verification": "Subiconos extraidos del .ico y mirados uno a uno",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-015.spec.md"
+      "evidence": ".specanchor/tasks/TASK-016.spec.md"
     },
     {
-      "requirement": "TASK-015/REQ-002",
-      "acceptance": "TASK-015/AC-002",
-      "verification": "Maestro a todos y a ninguno",
+      "requirement": "TASK-016/REQ-002",
+      "acceptance": "TASK-016/AC-002",
+      "verification": "ExtractAssociatedIcon sobre el .lnk y sobre el .html",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-015.spec.md"
+      "evidence": ".specanchor/tasks/TASK-016.spec.md"
     },
     {
-      "requirement": "TASK-015/REQ-003",
-      "acceptance": "TASK-015/AC-003",
-      "verification": "Cabecera del informe con todo marcado y quitando un pais",
+      "requirement": "TASK-016/REQ-002",
+      "acceptance": "TASK-016/AC-003",
+      "verification": "WScript.Shell: TargetPath y Test-Path",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-015.spec.md"
+      "evidence": ".specanchor/tasks/TASK-016.spec.md"
     },
     {
-      "requirement": "TASK-015/REQ-005",
-      "acceptance": "TASK-015/AC-006",
-      "verification": "Linea base con todo marcado",
+      "requirement": "TASK-016/REQ-003",
+      "acceptance": "—",
+      "verification": "git diff del .html",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-015.spec.md"
+      "evidence": ".specanchor/tasks/TASK-016.spec.md"
     }
   ]
 }

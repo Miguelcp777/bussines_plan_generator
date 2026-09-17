@@ -3,7 +3,8 @@
     {
       "name": "bp-builder",
       "paths": [
-        "business_plan_tool.html"
+        "business_plan_tool.html",
+        "business_plan_tool.ico"
       ],
       "spec": ".specanchor/modules/bp-builder.spec.md"
     },

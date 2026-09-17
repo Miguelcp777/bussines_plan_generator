@@ -30,3 +30,7 @@ _fix*.py
 # carpeta que no tiene arreglo discreto si acaba en el historial.
 .claude/settings.json
 .claude/worktrees/
+
+# Accesos directos: un .lnk guarda la ruta absoluta de la maquina donde se
+# creo. Versionarlo es repartir un atajo que en otro equipo no apunta a nada.
+*.lnk

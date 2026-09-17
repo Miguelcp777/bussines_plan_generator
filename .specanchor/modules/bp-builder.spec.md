@@ -220,6 +220,17 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   SVG oficiales suman 653 KB y ese peso son escudos que a 18 píxeles no se ven;
   la mediana del resto son 302 bytes. Se rasterizan con un motor de PDF, **no se
   dibujan a mano**: un color inventado en la bandera de un país se nota.
+- **C-UI-004.** La identidad es el monograma de J&J en `#EB1700`, y vive en dos
+  sitios con dos formas distintas porque los dos consumidores lo son: en la
+  **pestaña**, SVG en línea sobre transparente —se lee igual en claro y en
+  oscuro—; en el **Explorador**, `business_plan_tool.ico` sobre teja roja, que a
+  16 px es lo único que se distingue contra el blanco. Ninguno de los dos se
+  pide a la red, por C-UI-003.
+  Lo que ese `.ico` **no** puede hacer es cambiar el icono del `.html`: Windows
+  se lo pone por **tipo de archivo**, desde la asociación del registro, y hoy
+  esa asociación es Chrome. Un documento no lleva icono propio. Quien quiera ver
+  la marca al abrir la carpeta necesita un acceso directo, que es otro objeto;
+  quien la abra desde SharePoint verá Chrome y no hay nada que hacer.
 
 - **C-PRINT-006.** La portada llena su hoja: título arriba y ficha abajo
   (`margin-top:auto` sobre la ficha, no `space-between`, que desperdiga los cinco
