@@ -1,6 +1,6 @@
 {
-  "revision": "fde081e4489e413bf9922a247f46fffb97323e25",
-  "task_spec": ".specanchor/tasks/TASK-014.spec.md",
+  "revision": "c57e49cf550ceafd96941f1ae92c8d3827e7a1cd",
+  "task_spec": ".specanchor/tasks/TASK-015.spec.md",
   "files": [
     {
       "path": "business_plan_tool.html",
@@ -8,51 +8,58 @@
       "specs": [
         ".specanchor/modules/bp-builder.spec.md"
       ],
-      "rationale": "C-PRINT-006: la portada llena la hoja, con la ficha empujada abajo y la altura en vh para que valga en A4 y en Letter. Solo presentacion; ninguna cifra cambia.",
+      "rationale": "C-FILT-001 y 002: el carril nace con todo marcado y cada grupo tiene un Select all de tres estados; un grupo completo no restringe ni se nombra, uno vacio no deja pasar nada. La pregunta pasa a un solo sitio, filtActivo, porque size>0 la respondia en nueve y con todo marcado siempre daria que si.",
       "evidence": [
-        ".specanchor/tasks/TASK-014.spec.md"
+        ".specanchor/tasks/TASK-015.spec.md"
       ]
     },
     {
       "path": ".specanchor/modules/bp-builder.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "Contrato nuevo de impresion para la portada.",
+      "rationale": "Dos contratos nuevos del carril de filtros.",
       "evidence": [
-        ".specanchor/tasks/TASK-014.spec.md"
+        ".specanchor/tasks/TASK-015.spec.md"
       ]
     },
     {
-      "path": ".specanchor/tasks/TASK-014.spec.md",
+      "path": ".specanchor/tasks/TASK-015.spec.md",
       "kind": "requirement",
       "specs": [],
-      "rationale": "La tarea, verificada generando el PDF en los dos tamanos de papel.",
+      "rationale": "La tarea, con los seis criterios verificados sobre el plan real y el fallo propio encontrado al verificar.",
       "evidence": [
-        ".specanchor/tasks/TASK-014.spec.md"
+        ".specanchor/tasks/TASK-015.spec.md"
       ]
     }
   ],
   "traceability": [
     {
-      "requirement": "TASK-014/AC-001",
-      "acceptance": "TASK-014/AC-001",
-      "verification": "Medir el bloque de portada en el PDF",
+      "requirement": "TASK-015/REQ-001",
+      "acceptance": "TASK-015/AC-001",
+      "verification": "Estado del carril al cargar",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-014.spec.md"
+      "evidence": ".specanchor/tasks/TASK-015.spec.md"
     },
     {
-      "requirement": "TASK-014/AC-003",
-      "acceptance": "TASK-014/AC-003",
-      "verification": "Generar el PDF en Letter y en A4",
+      "requirement": "TASK-015/REQ-002",
+      "acceptance": "TASK-015/AC-002",
+      "verification": "Maestro a todos y a ninguno",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-014.spec.md"
+      "evidence": ".specanchor/tasks/TASK-015.spec.md"
     },
     {
-      "requirement": "TASK-014/AC-004",
-      "acceptance": "TASK-014/AC-004",
-      "verification": "Primer texto de la pagina 2",
+      "requirement": "TASK-015/REQ-003",
+      "acceptance": "TASK-015/AC-003",
+      "verification": "Cabecera del informe con todo marcado y quitando un pais",
       "result": "pass",
-      "evidence": ".specanchor/tasks/TASK-014.spec.md"
+      "evidence": ".specanchor/tasks/TASK-015.spec.md"
+    },
+    {
+      "requirement": "TASK-015/REQ-005",
+      "acceptance": "TASK-015/AC-006",
+      "verification": "Linea base con todo marcado",
+      "result": "pass",
+      "evidence": ".specanchor/tasks/TASK-015.spec.md"
     }
   ]
 }

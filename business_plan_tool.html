@@ -382,6 +382,7 @@ table.dt tfoot td{padding:8px 10px;font-weight:700;border-top:2px solid var(--bd
 .fsec>summary .n.on{display:inline-block}
 .fl{max-height:180px;overflow-y:auto;padding:0 6px 8px}
 .fi{display:flex;align-items:center;gap:7px;padding:3px 7px;border-radius:4px;cursor:pointer;font-size:.79rem}
+.fi-all{font-weight:700;border-bottom:1px solid var(--bdr);border-radius:0;margin-bottom:3px;padding-bottom:5px}
 .fi:hover{background:var(--surf3)}
 .fi input{accent-color:var(--blu);cursor:pointer;flex-shrink:0}
 .fi span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -3949,6 +3950,43 @@ function onCurrency(){ S.cur = $('curSel').value; saveSettings(); renderAll(); }
 /* ============================================================
    FILTERS
    ============================================================ */
+/* ============================================================
+   FILTROS
+
+   El carril nace con TODO marcado, que es como se lee «no estoy filtrando».
+   Antes nacía vacío, lo cual significaba lo mismo pero parecía lo contrario, y
+   para quitar un país había que marcar los otros dieciocho.
+
+   El cambio de verdad no son las casillas: `S.filt[k].size > 0` era, en nueve
+   sitios, la pregunta «¿hay filtro puesto?». Con todo marcado ese tamaño es
+   siempre mayor que cero, así que la cabecera del informe habría listado los
+   diecinueve países, el nombre del archivo también, y el panel igual.
+
+   Por eso la pregunta se hace ahora en un solo sitio: `filtActivo(k)` es cierto
+   cuando hay algo marcado Y NO ESTÁ TODO. Un grupo completo no restringe nada.
+   ============================================================ */
+const FILT_KEYS = ['cluster','country','platform','coverage','status','stream'];
+const filtActivo = k => { const n = S.filt[k].size, t = (S._filtVals[k]||[]).length;
+                          return n > 0 && n < t; };
+/* Lo que hay que nombrar de un grupo: nada si no restringe. */
+const filtLista = k => filtActivo(k) ? [...S.filt[k]] : [];
+
+function onFiltAll(k, cb){
+  S.filt[k] = new Set(cb.checked ? (S._filtVals[k] || []) : []);
+  document.querySelectorAll(`#filtPanel input[data-g="${k}"]`).forEach(x => { x.checked = cb.checked; });
+  syncFiltHead(k);
+  S.page = 1; renderAll();
+}
+/* El maestro tiene tres estados, no dos: marcado, vacío, y a medias. Enseñar a
+   medias como «desmarcado» haría creer que no se ve nada. */
+function syncFiltHead(k){
+  const t = (S._filtVals[k] || []).length, n = S.filt[k].size;
+  const m = document.querySelector(`#filtPanel input[data-all="${k}"]`);
+  if (m){ m.checked = n === t && t > 0; m.indeterminate = n > 0 && n < t; }
+  const c = $('fn-'+k);
+  if (c){ c.textContent = filtActivo(k) ? `${n}/${t}` : ''; c.className = filtActivo(k) ? 'n on' : 'n'; }
+}
+
 function buildFilters(){
   fillOppSelects();          // plataformas y coberturas salen de los propios datos
   const groups = [
@@ -3960,12 +3998,16 @@ function buildFilters(){
     ['stream','Revenue stream', r=>PAYER_LBL[r.payer]||r.payer]
   ];
   let h = `<div class="fp-h"><h3>Filters</h3><span class="cnt" id="fpCnt"></span></div>`;
+  S._filtVals = {};
   groups.forEach(([k,lbl,fn],gi)=>{
     const counts = {};
     S.rows.forEach(r=>{ const v=fn(r)||'—'; counts[v]=(counts[v]||0)+1; });
     const vals = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
+    S._filtVals[k] = vals;
+    S.filt[k] = new Set(vals);          // todo marcado = sin restricción
     h += `<details class="fsec" ${gi<3?'open':''}><summary>${lbl}<span class="n" id="fn-${k}"></span></summary><div class="fl">` +
-      vals.map(v=>`<label class="fi"><input type="checkbox" value="${esc(v)}" onchange="onFilt('${k}',this)"><span>${
+      `<label class="fi fi-all"><input type="checkbox" data-all="${k}" checked onchange="onFiltAll('${k}',this)"><span>Select all</span><span class="fn">${vals.length}</span></label>` +
+      vals.map(v=>`<label class="fi"><input type="checkbox" data-g="${k}" value="${esc(v)}" checked onchange="onFilt('${k}',this)"><span>${
         k==='country' ? bandera(v)+esc(v) : esc(v)}</span><span class="fn">${counts[v]}</span></label>`).join('') +
       `</div></details>`;
   });
@@ -4109,26 +4151,40 @@ const PAYER_PILL = { direct:'b', bundle:'p', both:'g', none:'n' };
 
 function onFilt(k, cb){
   cb.checked ? S.filt[k].add(cb.value) : S.filt[k].delete(cb.value);
-  const n = $('fn-'+k); if (n){ n.textContent = S.filt[k].size; n.className = S.filt[k].size?'n on':'n'; }
+  syncFiltHead(k);
   S.page = 1; renderAll();
 }
 function onSearch(){ S.filt.q = $('q').value.trim().toLowerCase(); S.page = 1; renderBase(); renderBaseKpis(); }
 function clearFilters(){
-  ['cluster','country','platform','coverage','status','stream'].forEach(k=>{ S.filt[k].clear(); const n=$('fn-'+k); if(n){n.textContent='';n.className='n';} });
+  /* Quitar los filtros ya no es dejarlo todo en blanco: es volver a marcarlo
+     todo, que es el mismo estado —sin restricción— dicho como se lee. */
+  FILT_KEYS.forEach(k=>{ S.filt[k] = new Set(S._filtVals[k] || []); });
   S.filt.q=''; if($('q')) $('q').value='';
-  $$('#filtPanel input[type=checkbox]').forEach(c=>c.checked=false);
+  $$('#filtPanel input[type=checkbox]').forEach(c=>{ c.checked=true; c.indeterminate=false; });
+  FILT_KEYS.forEach(syncFiltHead);
   S.page=1; renderAll();
 }
 /* records passing the rail filters (used by every analysis pane) */
 function scoped(){
   const f = S.filt;
+  /* Con las casillas marcadas por defecto, un grupo VACÍO ya no significa «sin
+     filtro» sino «el usuario los ha desmarcado todos», y entonces no pasa nada.
+     Antes vacío era el estado inicial y tenía que dejar pasar todo; la regla
+     vieja habría dejado 412 registros a la vista con cero países marcados.
+     La excepción es antes de construir el carril —`S._filtVals` sin ese grupo—,
+     donde vacío sigue siendo «todavía no hay filtros». */
+  const vals = S._filtVals || {};
+  const pasa = (k, v) => {
+    if (!vals[k]) return true;                 // el carril aún no existe
+    return f[k].has(v);
+  };
   return S.rows.filter(r=>{
-    if (f.cluster.size  && !f.cluster.has(r.cluster))  return false;
-    if (f.country.size  && !f.country.has(r.country))  return false;
-    if (f.platform.size && !f.platform.has(r.platform))return false;
-    if (f.coverage.size && !f.coverage.has(r.coverage))return false;
-    if (f.status.size   && !f.status.has(CLS_LBL[r._cls]||r._cls)) return false;
-    if (f.stream.size   && !f.stream.has(PAYER_LBL[r.payer]||r.payer)) return false;
+    if (!pasa('cluster',  r.cluster))  return false;
+    if (!pasa('country',  r.country))  return false;
+    if (!pasa('platform', r.platform)) return false;
+    if (!pasa('coverage', r.coverage)) return false;
+    if (!pasa('status',   CLS_LBL[r._cls]||r._cls)) return false;
+    if (!pasa('stream',   PAYER_LBL[r.payer]||r.payer)) return false;
     return true;
   });
 }
@@ -4198,8 +4254,8 @@ function renderDash(){
     sel.innerHTML = '<option value="">All countries</option>' + cs.map(c=>`<option>${esc(c)}</option>`).join('');
   }
   const parts = [];
-  if (S.filt.cluster.size) parts.push([...S.filt.cluster].join(', '));
-  if (S.filt.country.size) parts.push([...S.filt.country].join(', '));
+  if (filtActivo('cluster')) parts.push(filtLista('cluster').join(', '));
+  if (filtActivo('country')) parts.push(filtLista('country').join(', '));
   if (S._dashCtry) parts.push(S._dashCtry);
   /* El panel decía «All regions» sobre el recorte de un manager, igual que el
      informe: los filtros están vacíos porque el recorte lo hizo buildRecords. */
@@ -5823,12 +5879,7 @@ function eolDraft(){
    filtered impact is how you end up mistrusting the number. */
 function eolScopeText(){
   const parts = [];
-  if (S.filt.cluster.size)  parts.push([...S.filt.cluster].join(', '));
-  if (S.filt.country.size)  parts.push([...S.filt.country].join(', '));
-  if (S.filt.platform.size) parts.push([...S.filt.platform].join(', '));
-  if (S.filt.coverage.size) parts.push([...S.filt.coverage].join(', '));
-  if (S.filt.status.size)   parts.push([...S.filt.status].join(', '));
-  if (S.filt.stream.size)   parts.push([...S.filt.stream].join(', '));
+  FILT_KEYS.forEach(k => { if (filtActivo(k)) parts.push(filtLista(k).join(', ')); });
   return parts.join(' · ');
 }
 
@@ -6247,10 +6298,13 @@ function aspDecompose(selRecs, benchRecs){
 
 function onAspCluster(){
   const v = $('aspCluster').value;
-  S.filt.cluster.clear(); S.filt.country.clear();
-  if (v) S.filt.cluster.add(v);
-  $$('#filtPanel input[type=checkbox]').forEach(cb => { cb.checked = S.filt.cluster.has(cb.value); });
-  ['cluster','country'].forEach(k=>{ const n=$('fn-'+k); if(n){ n.textContent=S.filt[k].size||''; n.className=S.filt[k].size?'n on':'n'; } });
+  /* Elegir un cluster aquí acota a ese; el «todos» del desplegable vuelve al
+     estado neutro, que es todo marcado. */
+  S.filt.cluster = new Set(v ? [v] : (S._filtVals.cluster || []));
+  S.filt.country = new Set(S._filtVals.country || []);
+  $$('#filtPanel input[data-g="cluster"]').forEach(cb => { cb.checked = S.filt.cluster.has(cb.value); });
+  $$('#filtPanel input[data-g="country"]').forEach(cb => { cb.checked = true; });
+  ['cluster','country'].forEach(syncFiltHead);
   S.page = 1; renderAll(); renderAsp();
 }
 const aspAllCtry = () => uniq(S.rows.map(r=>r.country)).filter(Boolean).sort();
@@ -6403,7 +6457,7 @@ function renderAsp(){
     const cl = uniq(S.rows.map(r=>r.cluster)).sort();
     cs.innerHTML = '<option value="">All regions</option>' + cl.map(c=>`<option>${esc(c)}</option>`).join('');
   }
-  if (cs) cs.value = S.filt.cluster.size === 1 ? [...S.filt.cluster][0] : '';
+  if (cs) cs.value = (filtActivo('cluster') && S.filt.cluster.size === 1) ? [...S.filt.cluster][0] : '';
   if ($('aspBasis')) $('aspBasis').value = S.st.aspBasis;
 
   setTx('aspBenchLbl', aspBenchLabel(true));
@@ -7669,9 +7723,7 @@ function planScope(){
   if (S.consol) return 'EMEA';
   const u = currentUser();
   if (u) return String(scopeLabel(u)).replace(/[^\w&-]+/g, '') || 'EMEA';
-  const f = S.filt || {};
-  const cl = f.cluster && f.cluster.size ? [...f.cluster] : [];
-  const co = f.country && f.country.size ? [...f.country] : [];
+  const cl = filtLista('cluster'), co = filtLista('country');
   let who = 'EMEA';
   if (cl.length) who = cl.length <= 2 ? cl.join('-') : cl.length + 'clusters';
   else if (co.length) who = co.length <= 2 ? co.join('-') : co.length + 'countries';
@@ -8193,8 +8245,8 @@ ${png ? '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application
 /* Where the numbers came from, so a sheet that gets forwarded on its own still says which
    cycle, which scope and which currency it belongs to. */
 function xlsxSub(){
-  const scope = S.filt.cluster.size ? [...S.filt.cluster].join(', ')
-              : S.filt.country.size ? [...S.filt.country].join(', ') : 'All regions';
+  const scope = filtActivo('cluster') ? filtLista('cluster').join(', ')
+              : filtActivo('country') ? filtLista('country').join(', ') : 'All regions';
   return `${S.cy.type}${S.cy.year} · ${scope} · ${S.cur} · ${S.st.org} · exported `
        + new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 }
@@ -8310,8 +8362,8 @@ function openReport(){
      Iberia. Los filtros siguen mandando cuando los hay, porque nombran la
      intención mejor que una lista de países. */
   const paisesEnAlcance = uniq(rows.map(r => r.country)).filter(Boolean).sort();
-  const scopeTxt = (S.filt.cluster.size ? [...S.filt.cluster].join(', ')
-    : S.filt.country.size ? [...S.filt.country].join(', ')
+  const scopeTxt = (filtActivo('cluster') ? filtLista('cluster').join(', ')
+    : filtActivo('country') ? filtLista('country').join(', ')
     : S._dashCtry ? S._dashCtry
     : paisesEnAlcance.length === 0 ? 'No countries in scope'
     : paisesEnAlcance.length <= 6 ? paisesEnAlcance.join(', ')
@@ -8822,7 +8874,7 @@ async function copyBoth(html, text){
 
 function copyEmailSummary(){
   const rows = dashRows(), sc = scenarios(rows), g = grossFigures(rows), at = attachment(rows);
-  const scope = S.filt.cluster.size?[...S.filt.cluster].join(', '):S.filt.country.size?[...S.filt.country].join(', '):(S._dashCtry||'All regions');
+  const scope = filtActivo('cluster')?filtLista('cluster').join(', '):filtActivo('country')?filtLista('country').join(', '):(S._dashCtry||'All regions');
   const t =
 `${S.cy.type}${S.cy.year} — Service Contract Business Plan
 Scope: ${scope} · ${rows.length} customer-system records · currency ${S.cur}

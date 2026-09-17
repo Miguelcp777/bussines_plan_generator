@@ -228,6 +228,16 @@ Medido sobre los archivos reales de Iberia, revisión `c593c90` (TASK-003):
   medida fija deja blanco en uno o empuja a una segunda hoja en el otro.
   Verificado en los dos papeles: 9 páginas y portada al 93 %.
 
+- **C-FILT-001.** El carril nace con **todos los valores marcados**, y cada
+  grupo tiene un «Select all» con tres estados: todo, nada y a medias. Antes
+  nacía vacío, que significaba lo mismo —sin restricción— pero se lee al revés.
+- **C-FILT-002.** Un grupo con **todo** marcado no restringe y **no se nombra**
+  como filtro en ninguna pantalla; uno **vacío** no deja pasar nada. La pregunta
+  «¿hay filtro puesto?» se hace en un solo sitio —`filtActivo(k)`: hay algo y no
+  está todo— porque `S.filt[k].size > 0` la respondía en nueve, y con todo
+  marcado siempre daría que sí: la cabecera del informe habría listado los
+  diecinueve países y el nombre del archivo también.
+
 ## Pruebas / verificación
 
 - `node --check` sobre el `<script>` extraído. · el único control automatizado
